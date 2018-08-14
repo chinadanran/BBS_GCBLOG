@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录 - 博客园</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://at.alicdn.com/t/font_752098_yze8umtuup.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        svg {
+            font-size: 22px;
+        }
+
+        .icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+        }
+
+        .top-Bar {
+            background-color: rgb(40, 62, 92);
+            margin-bottom: 0;
+        }
+
+        li .login:hover svg {
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        li .registered:hover svg {
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .bgc-left {
+            margin: 50px 0;
+        }
+
+        .login-form {
+            padding: 40px 0;
+            margin: 50px 0;
+        }
+        .error_msg {
+            color: rgba(250, 82, 63, 0.8);
+            right: 25px;
+            top: 5px;
+            position: absolute;
+            font-size: 10px;
+        }
+    </style>
+    <script>
+        $(function () {
+            $('.login').hover(function (event) {
+                $(this).children('.icon').html('<use class="icon-font" xlink:href="#icon--kiss-1"></use>');
+            }, function (event) {
+                $(this).children('.icon').html('<use class="icon-font" xlink:href="#icon--mute"></use>');
+            });
+            $('.registered').hover(function (event) {
+                $(this).children('.icon').html('<use class="icon-font" xlink:href="#icon--kiss-"></use>');
+            }, function (event) {
+                $(this).children('.icon').html('<use class="icon-font" xlink:href="#icon--mute"></use>');
+            })
+        });
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-inverse top-Bar" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#" style="background-color: rgba(0,0,0,0)">
+
+                </a></li>
+                <li><a href="#" style="font-family: 楷体;font-size: 30px;font-weight: 800">博客园
+                    <svg class="icon" aria-hidden="true" style="font-size: 22px;">
+                        <use xlink:href="#icon-wifi"></use>
+                    </svg>
+                </a></li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/index/">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-imagevector"></use>
+                    </svg>
+                    首页
+                </a></li>
+                <li><a href="/login/" class="login">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon--mute"></use>
+                    </svg>
+                    登录
+                </a></li>
+                <li><a href="/registered/" class="registered">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon--mute"></use>
+                    </svg>
+                    注册
+                </a></li>
+                <li><a href="#">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-bangzhu-copy"></use>
+                    </svg>
+                    帮助
+                </a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="media-body">
+    <div class="container">
+        <div class="modal-header">
+            <h3 class="reg_new">登录</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-4 bgc-left">
+                    <img src="http://w1.wallls.com/uploads/original/201602/10/wallls.com_60772.jpg"
+                         class="img-responsive" alt="Responsive image" style="width: 100%;border-radius: 15px">
+                </div>
+                <div class="col-md-1"></div>
+                <div class="col-md-6 login-form" style="border-left: 2px solid #eeeeee">
+                    <form class="form-horizontal" method="post" action="">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="inputUserName" class="col-sm-3 control-label">登录用户名</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="inputUserName" name="email" required=""
+                                       autofocus="" value="{{ user_name }}">
+                                <span class="error_msg">{{ user_msg }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPassword3" class="col-sm-3 control-label">密码</label>
+                            <div class="col-sm-9">
+                                <input type="password" class="form-control" id="inputPassword3" name="pass" required="">
+                                <span class="error_msg">{{ pwd_msg }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="V_CODE" class="col-sm-3 control-label">验证码</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control" id="V_CODE" name="v_code">
+                                <span class="error_msg"></span>
+                            </div>
+                            <div class="col-sm-1"></div>
+                            <div class="col-sm-4">
+                                <img src="/v_code_img/" alt="点击重新获取" id="vCodeImg">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-5  col-sm-5">
+                                <button type="button" class="btn btn-primary btn-group-justified" id="login_btn">登录</button>
+                            </div>
+                        </div>
+                    </form>
+                    <p class="protocol text-center col-sm-3"></p>
+                    <p class="protocol text-center col-sm-9">暂无用户，立即 <a href="/registered/">注册</a></p>
+                </div>
+                <div class="col-md-1"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="foot">
+    <div class="container">
+        <div class="modal-footer">
+            <p class="text-center">
+                <a href="javascript:;">关于博客园</a>&nbsp;
+                <a href="javascript:;">联系我们</a>
+                ©2004-2018
+                <a href="javascript:;">博客园</a>
+                保留所有权利 Powered by ASP.NET Core on Linux
+            </p>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    $('#vCodeImg').click(function () {
+        if (this.src.endsWith('?')){
+            this.src = this.src.slice(0,-1)
+        } else {
+            this.src += '?'
+        }
+    });
+    $('#V_CODE').blur(function () {
+        $code = $(this);
+        let code = $code.val();
+        let csrfToken = $("[name='csrfmiddlewaretoken']").val();
+        console.log(code);
+        if (code.length !== 0) {
+            $.ajax({
+                url:'/check_v_code/',
+                type:'post',
+                data:{'v_code':code,csrfmiddlewaretoken: csrfToken,},
+                success:function (data) {
+                    if (data.count !== 0) {
+                        $code.next().text(data.error_msg);
+                        $code.parent().parent().addClass('has-error form-group');
+                        $code.attr('status',0)
+                    }else {
+                        $code.next().text('√').css('color', 'green');
+                        $code.parent().parent().removeClass('has-error');
+                        $code.parent().parent().addClass('has-success form-group');
+                        $('#login_btn').attr('type','submit')
+                    }
+                }
+            })
+        }
+    });
+    $('#login_btn').click(function () {
+        $code = $('#V_CODE');
+        if ($code.val().length === 0){
+            $code.next().text('请填写验证码');
+            $code.parent().parent().addClass('has-error form-group');
+        }
+    })
+</script>
+</html>
