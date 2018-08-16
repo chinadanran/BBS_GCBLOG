@@ -43,7 +43,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a></li>
-                <li><a href="/myblog/">我的博园</a></li>
+                <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li style="margin: 4px 2px 0 10px;">
@@ -81,7 +81,7 @@
                                         {{ forloop.counter }}&nbsp;
                                         {{ art.title }}
                                     </a>
-                                    <span style="float: right">-- {{ art.user.username }}</span>
+                                    <span style="float: right"><a href="/home/{{ art.user.username }}">-- {{ art.user.username }}</a></span>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -109,7 +109,7 @@
                                 </a>
                             </div>
                             <div class="media-body" style="line-height: 40px">
-                                <a href="#">
+                                <a href="/home/{{ article.user.username }}">
                                     <img class="media-object"
                                          style="width: 40px;display: inline-block;border-radius: 50%"
                                          src="/media/{{ article.user.avatar }}" alt="...">
@@ -117,7 +117,7 @@
                                 {{ article.desc }}...
                             </div>
                             <div class="media-foot">
-                                <span>{{ article.user.username }}</span>
+                                <span><a href="/home/{{ article.user.username }}">{{ article.user.username }}</a></span>
                                 <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-wedding-invitation"></use>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC博园</title>
+    <title>{{ user.username }}的博园-GC博园</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
@@ -43,7 +43,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a></li>
-                <li><a href="/myblog/">我的博园</a></li>
+                <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li style="margin: 4px 2px 0 10px;">
@@ -75,9 +75,9 @@
                     </div>
                     <div>
                         <ul class="nav nav-pills nav-stacked text-center">
-                            {% for category in request.user.blog.category_set.all %}
+                            {% for category in category_list %}
                                 <li class="clearfix">
-                                    <a href="javascript:;">{{ category.title }}</a>
+                                    <a href="/home/{{ user.username }}/category/{{ category.title }}/">{{ category.title }}({{ category.article_set.all.count }})</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -89,9 +89,9 @@
                     </div>
                     <div>
                         <ul class="nav nav-pills nav-stacked text-center">
-                            {% for tag in request.user.blog.tag_set.all %}
+                            {% for tag in tag_list %}
                                 <li class="clearfix">
-                                    <a href="javascript:;">{{ tag.title }}</a>
+                                    <a href="/home/{{ user.username }}/tag/{{ tag.title }}/">{{ tag.title }}（{{ tag.article_set.all.count }}）</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -99,7 +99,7 @@
                 </div>
             </div>
             <div class="col-md-8">
-                {% for article in articleList %}
+                {% for article in data %}
                     <div class="article">
                         <div class="media">
                             <div class="media-left media-middle" style="margin-bottom: 10px">
@@ -111,7 +111,7 @@
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ article.desc }}...
                             </div>
                             <div class="media-foot">
-                                <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
+                                <span><a href="/home/{{ article.user.username }}">{{ article.user.username }}</a>&nbsp;&nbsp;&nbsp;&nbsp;发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-wedding-invitation"></use>
                                 </svg>
@@ -132,11 +132,11 @@
             <div class="col-md-2">
                 <div class="panel panel-primary">
                     <div class="panel-heading text-center">
-                        <h3 class="panel-title">文章列表</h3>
+                        <h3 class="panel-title">{{ user.username }}的博园</h3>
                     </div>
                     <div class="panel-body">
                         <ul class="nav nav-pills nav-stacked text-center">
-                            {% for article in request.user.article_set.all %}
+                            {% for article in my_article_list %}
                                 {% if forloop.counter <= 5 %}
                                     <li class="clearfix" style="margin-bottom: 8px">
                                         <a href="/myarticle/?article_id={{ article.id }}">
@@ -155,9 +155,9 @@
                     </div>
                     <div>
                         <ul class="nav nav-pills nav-stacked text-center">
-                            {% for group in year_month_number %}
+                            {% for group in  archive_list %}
                                 <li class="clearfix">
-                                    <a href="javascript:;">{{ group.0 }}年{{ group.1 }}月（{{ group.2 }}）</a>
+                                    <a href="/home/{{ user.username }}/archive/{{ group.y_m }}/">{{ group.y_m }}（{{ group.c }}）</a>
                                 </li>
                             {% endfor %}
                         </ul>

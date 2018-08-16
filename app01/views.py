@@ -12,7 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.cache import never_cache
 from geetest import GeetestLib
 from utils.mypage import Mypage
-
+from django.db.models import Count
 
 pc_geetest_id = "b46d1900d0a894591916ea94ea91bd2c"
 pc_geetest_key = "36fc3fe98530eea08dfc6ce76e3d24c4"
@@ -288,32 +288,33 @@ def index(req):
 # 首页函数结束
 # ===================================================================
 # 我的博园开始
-@login_required
-def myblog(req):
-    '''
-    我的博园函数
-    :param req:
-    :return: 我的博园页面
-    '''
-    user = req.session['user']
-    articles = models.Article.objects.filter(user__username=user)
-    data_amount = articles.count()
-    page_num = req.GET.get('page', 1)
-    page_obj = Mypage(page_num, data_amount, 'myblog', per_page_data=3)
-    data = articles[page_obj.ret_start: page_obj.ret_end]
-    page_html = page_obj.ret_html()
-    year_month = set()  # 设置集合，无重复元素
-    for a in articles:
-        year_month.add((a.create_time.year, a.create_time.month))  # 把每篇文章的年、月以元组形式添加到集合中
-    counter = {}.fromkeys(year_month, 0)  # 以元组作为key，初始化字典
-    for a in articles:
-        counter[(a.create_time.year, a.create_time.month)] += 1  # 按年月统计文章数目
-    year_month_number = []  # 初始化列表
-    for key in counter:
-        year_month_number.append([key[0], key[1], counter[key]])  # 把字典转化为（年，月，数目）元组为元素的列表
-    year_month_number.sort(reverse=True)  # 排序
-
-    return render(req, 'myblog.html', { 'articleList': data, 'page_html': page_html,'year_month_number': year_month_number})
+# @login_required
+# def myblog(req):
+#     '''
+#     我的博园函数
+#     :param req:
+#     :return: 我的博园页面
+#     '''
+#     user = req.session.get('user', '')
+#     articles = models.Article.objects.filter(user__username=user)
+#     data_amount = articles.count()
+#     page_num = req.GET.get('page', 1)
+#     page_obj = Mypage(page_num, data_amount, 'myblog', per_page_data=3)
+#     data = articles[page_obj.ret_start: page_obj.ret_end]
+#     page_html = page_obj.ret_html()
+#     year_month = set()  # 设置集合，无重复元素
+#     for a in articles:
+#         year_month.add((a.create_time.year, a.create_time.month))  # 把每篇文章的年、月以元组形式添加到集合中
+#     counter = {}.fromkeys(year_month, 0)  # 以元组作为key，初始化字典
+#     for a in articles:
+#         counter[(a.create_time.year, a.create_time.month)] += 1  # 按年月统计文章数目
+#     year_month_number = []  # 初始化列表
+#     for key in counter:
+#         year_month_number.append([key[0], key[1], counter[key]])  # 把字典转化为（年，月，数目）元组为元素的列表
+#     year_month_number.sort(reverse=True)  # 排序
+#
+#     return render(req, 'myblog.html',
+#                   {'articleList': data, 'page_html': page_html, 'year_month_number': year_month_number})
 
 
 def myarticle(req):
@@ -329,8 +330,49 @@ def myarticle(req):
         contents = models.ArticleDetail.objects.filter(article_id=article_id).first().content
     except:
         return redirect('/404/')
-    return render(req, 'myarticle.html', {'contents': contents, 'article': article_obj,'recommend_art_list':recommend_art_list})
+    return render(req, 'myarticle.html',
+                  {'contents': contents, 'article': article_obj, 'recommend_art_list': recommend_art_list})
 
 
 def page_not_find(req):
-    return render(req,'404.html')
+    return render(req, '404.html')
+
+
+def home(req, username, *args, **kwargs):
+    user_obj = models.UserInfo.objects.filter(username=username).first()
+    article_list = models.Article.objects.filter(user=user_obj)
+    my_article_list = article_list
+    blog_obj = user_obj.blog
+    category_list = models.Category.objects.filter(blog=blog_obj)
+    tag_list = models.Tag.objects.filter(blog=blog_obj)
+    archive_list = models.Article.objects.filter(user=user_obj).extra(
+        select={"y_m": "strftime('%%Y-%%m',create_time,'localtime')"}
+    ).values("y_m").annotate(c=Count("id")).values("y_m", "c")
+    url = f'home/{username}'
+    if args:
+        url = f'home/{username}/{args[0]}/{args[1]}'
+        if args[0] == "category":
+            article_list = article_list.filter(category__title=args[1])
+        elif args[0] == "tag":
+            article_list = article_list.filter(tags__title=args[1])
+        else:
+            try:
+                year, month = args[1].split("-")
+                article_list = article_list.filter(create_time__year=year, create_time__month=month)
+            except Exception as e:
+                pass
+    data_amount = article_list.count()
+    page_num = req.GET.get('page', 1)
+    page_obj = Mypage(page_num, data_amount, url, per_page_data=3)
+    data = article_list[page_obj.ret_start: page_obj.ret_end]
+    page_html = page_obj.ret_html()
+    return render(req, "home.html", {
+        "blog": blog_obj,
+        "data": data,
+        "my_article_list": my_article_list,
+        "category_list": category_list,
+        "tag_list": tag_list,
+        "archive_list": archive_list,
+        "user": user_obj,
+        'page_html': page_html
+    })
