@@ -1,0 +1,18 @@
+html,body {
+	height:100%;
+	min-width:1200px;
+}
+html,body,div,h1,span,a {
+	margin:0;
+	padding:0;
+}
+#canvas {
+	margin-top:80px;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+	width:100%;
+	z-index:0;
+	position:absolute;
+}

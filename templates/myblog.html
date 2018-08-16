@@ -70,37 +70,36 @@
         <div class="row">
             <div class="col-md-2">
                 <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">今日推荐</h3>
+                    <div class="panel-heading text-center">
+                        <h3 class="panel-title">文章分类</h3>
                     </div>
-                    <div class="panel-body">
-                        <ul class="nav nav-pills nav-stacked">
-                            {% for art in recommend_art_list %}
-                                <li class="clearfix" style="margin-bottom: 20px">
-                                    <a style="padding: 0" href="/myarticle/?article_id={{ art.id }}">
-                                        {{ forloop.counter }}&nbsp;
-                                        {{ art.title }}
-                                    </a>
-                                    <span style="float: right">-- {{ art.user.username }}</span>
+                    <div>
+                        <ul class="nav nav-pills nav-stacked text-center">
+                            {% for category in request.user.blog.category_set.all %}
+                                <li class="clearfix">
+                                    <a href="javascript:;">{{ category.title }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
                     </div>
                 </div>
                 <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
+                    <div class="panel-heading text-center">
+                        <h3 class="panel-title">文章标签</h3>
                     </div>
                     <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
-                             alt="" style="width: 192.8px">
-                        <img src="https://tpc.googlesyndication.com/daca_images/simgad/1239864976813252089"
-                             alt="" style="width: 192.8px">
+                        <ul class="nav nav-pills nav-stacked text-center">
+                            {% for tag in request.user.blog.tag_set.all %}
+                                <li class="clearfix">
+                                    <a href="javascript:;">{{ tag.title }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>
             <div class="col-md-8">
-                {% for article in article_list %}
+                {% for article in articleList %}
                     <div class="article">
                         <div class="media">
                             <div class="media-left media-middle" style="margin-bottom: 10px">
@@ -109,15 +108,9 @@
                                 </a>
                             </div>
                             <div class="media-body" style="line-height: 40px">
-                                <a href="#">
-                                    <img class="media-object"
-                                         style="width: 40px;display: inline-block;border-radius: 50%"
-                                         src="/media/{{ article.user.avatar }}" alt="...">
-                                </a>
-                                {{ article.desc }}...
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ article.desc }}...
                             </div>
                             <div class="media-foot">
-                                <span>{{ article.user.username }}</span>
                                 <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-wedding-invitation"></use>
@@ -139,46 +132,35 @@
             <div class="col-md-2">
                 <div class="panel panel-primary">
                     <div class="panel-heading text-center">
-                        <h3 class="panel-title">搜索引擎</h3>
+                        <h3 class="panel-title">文章列表</h3>
                     </div>
                     <div class="panel-body">
-                        <form action="http://www.baidu.com/baidu" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="http://www.baidu.com/">
-                                <img alt="baidu" src="/static/img/logo-80px.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="百度一下">
-                        </form>
-                        <hr>
-                        <form action="https://www.google.com/" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="https://www.google.com/">
-                                <img alt="baidu" src="/static/img/Logo_25wht.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="谷歌搜索">
-                        </form>
-                        <hr>
-                        <form action="http://so.xunlei.com/search" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="http://www.xunlei.com/">
-                                <img alt="baidu" src="/static/img/logo_search.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="迅雷搜索">
-                        </form>
+                        <ul class="nav nav-pills nav-stacked text-center">
+                            {% for article in request.user.article_set.all %}
+                                {% if forloop.counter <= 5 %}
+                                    <li class="clearfix" style="margin-bottom: 8px">
+                                        <a href="/myarticle/?article_id={{ article.id }}">
+                                            {{ forloop.counter }}.
+                                            {{ article.title }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
                 <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
+                    <div class="panel-heading text-center">
+                        <h3 class="panel-title">日期归档</h3>
                     </div>
                     <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
-                             alt="" style="width: 192.8px">
-                        <img src="https://tpc.googlesyndication.com/daca_images/simgad/17936005028505820328"
-                             alt="" style="width: 192.8px;height: 200px">
+                        <ul class="nav nav-pills nav-stacked text-center">
+                            {% for group in year_month_number %}
+                                <li class="clearfix">
+                                    <a href="javascript:;">{{ group.0 }}年{{ group.1 }}月（{{ group.2 }}）</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>

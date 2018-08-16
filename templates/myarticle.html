@@ -42,7 +42,8 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a></li>
+                <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a>
+                </li>
                 <li><a href="/myblog/">我的博园</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
@@ -100,23 +101,16 @@
                 </div>
             </div>
             <div class="col-md-8">
-                {% for article in article_list %}
-                    <div class="article">
-                        <div class="media">
-                            <div class="media-left media-middle" style="margin-bottom: 10px">
-                                <a href="/myarticle/?article_id={{ article.id }}">
-                                    <h4 class="media-heading">{{ article.title }}</h4>
-                                </a>
-                            </div>
-                            <div class="media-body" style="line-height: 40px">
-                                <a href="#">
-                                    <img class="media-object"
-                                         style="width: 40px;display: inline-block;border-radius: 50%"
-                                         src="/media/{{ article.user.avatar }}" alt="...">
-                                </a>
-                                {{ article.desc }}...
-                            </div>
-                            <div class="media-foot">
+                <div class="article">
+                    <div class="media">
+                        <div class="media-left media-middle" style="margin:30px 20px">
+                            <h1 class="media-heading">{{ article.title }}</h1>
+                        </div>
+                        <div class="media-body" style="line-height: 40px">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ contents }}
+                        </div>
+                        <div class="media-foot" style="margin-top: 20px;float: right">
+                            <h4>
                                 <span>{{ article.user.username }}</span>
                                 <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
                                 <svg class="icon" aria-hidden="true">
@@ -127,14 +121,10 @@
                                     <use xlink:href="#icon-love"></use>
                                 </svg>
                                 <span>点赞（{{ article.up_count }}）</span>
-                            </div>
+                            </h4>
                         </div>
                     </div>
-                    {% if forloop.counter != 5 %}
-                        <hr>
-                    {% endif %}
-                {% endfor %}
-
+                </div>
             </div>
             <div class="col-md-2">
                 <div class="panel panel-primary">

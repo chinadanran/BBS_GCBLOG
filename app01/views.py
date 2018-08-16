@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.cache import never_cache
 from geetest import GeetestLib
+from utils.mypage import Mypage
+
 
 pc_geetest_id = "b46d1900d0a894591916ea94ea91bd2c"
 pc_geetest_key = "36fc3fe98530eea08dfc6ce76e3d24c4"
@@ -36,15 +38,16 @@ class Login(views.View):
         :return: 成功返回index页面，失败返回login页面
         '''
         data = {'count': 0}
-        user = request.POST.get('email')
+        user_name = request.POST.get('email')
         pwd = request.POST.get('pass')
-        user = authenticate(username=user, password=pwd)
+        user = authenticate(username=user_name, password=pwd)
         if user is None:
             data['user_msg'] = '用户名或密码错误'
             data['count'] = 1
         else:
             login(request, user)
             next_url = request.GET.get('next')
+            request.session['user'] = user_name
             request.session['showname'] = models.UserInfo.objects.get(username=user).name
             if next_url and not request.path_info:
                 rep = redirect(f'{next_url}')
@@ -117,7 +120,6 @@ def check_v_code(request):
     '''
     data = {'count': 0, 'error_msg': ''}
     v_code = request.POST.get('v_code')
-    print(v_code)
     if v_code.upper() != request.session.get("v_code", ""):
         data['count'] = 1
         data['error_msg'] = '验证码输入错误'
@@ -224,7 +226,6 @@ def check_showname(req):
         else:
             msg['count'] = 1
             msg['msg'] = '显示名格式不正确'
-        print(msg)
         return JsonResponse(msg)
 
 
@@ -269,8 +270,67 @@ def pcgetcaptcha(request):
 
 # 注册函数结束
 # ==========================================
-# 首页函数
+# 首页函数开始
 @login_required
 def index(req):
     show_name = req.session.get('showname', '')
-    return render(req, 'index.html', {'showname': show_name})
+    article_list = models.Article.objects.all()
+    data_amount = article_list.count()
+    page_num = req.GET.get('page', 1)
+    page_obj = Mypage(page_num, data_amount, 'index', per_page_data=5)
+    data = article_list[page_obj.ret_start: page_obj.ret_end]
+    page_html = page_obj.ret_html()
+    recommend_art_list = models.Article.objects.filter(up_count__gt=5)
+    return render(req, 'index.html', {'showname': show_name, 'article_list': data, 'page_html': page_html,
+                                      'recommend_art_list': recommend_art_list})
+
+
+# 首页函数结束
+# ===================================================================
+# 我的博园开始
+@login_required
+def myblog(req):
+    '''
+    我的博园函数
+    :param req:
+    :return: 我的博园页面
+    '''
+    user = req.session['user']
+    articles = models.Article.objects.filter(user__username=user)
+    data_amount = articles.count()
+    page_num = req.GET.get('page', 1)
+    page_obj = Mypage(page_num, data_amount, 'myblog', per_page_data=3)
+    data = articles[page_obj.ret_start: page_obj.ret_end]
+    page_html = page_obj.ret_html()
+    year_month = set()  # 设置集合，无重复元素
+    for a in articles:
+        year_month.add((a.create_time.year, a.create_time.month))  # 把每篇文章的年、月以元组形式添加到集合中
+    counter = {}.fromkeys(year_month, 0)  # 以元组作为key，初始化字典
+    for a in articles:
+        counter[(a.create_time.year, a.create_time.month)] += 1  # 按年月统计文章数目
+    year_month_number = []  # 初始化列表
+    for key in counter:
+        year_month_number.append([key[0], key[1], counter[key]])  # 把字典转化为（年，月，数目）元组为元素的列表
+    year_month_number.sort(reverse=True)  # 排序
+
+    return render(req, 'myblog.html', { 'articleList': data, 'page_html': page_html,'year_month_number': year_month_number})
+
+
+def myarticle(req):
+    '''
+    我的文章函数
+    :param req:
+    :return: 文章页面
+    '''
+    try:
+        recommend_art_list = models.Article.objects.filter(up_count__gt=5)
+        article_id = req.GET.get('article_id')
+        article_obj = models.Article.objects.filter(id=article_id).first()
+        contents = models.ArticleDetail.objects.filter(article_id=article_id).first().content
+    except:
+        return redirect('/404/')
+    return render(req, 'myarticle.html', {'contents': contents, 'article': article_obj,'recommend_art_list':recommend_art_list})
+
+
+def page_not_find(req):
+    return render(req,'404.html')

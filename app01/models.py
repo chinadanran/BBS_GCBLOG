@@ -78,16 +78,17 @@ class Article(models.Model):
     """
     title = models.CharField(max_length=50)# 文章标题
     desc = models.CharField(max_length=255)# 文章描述
-    create_time = models.TimeField(auto_now_add=True)   # 创建时间
+    create_time = models.DateTimeField(auto_now_add=True)   # 创建时间
     category = models.ForeignKey(to="Category", null=True)# 文章分类
     user = models.ForeignKey(to='UserInfo')#作者
     tags = models.ManyToManyField(# 文章的标签
         to="Tag",
         through="Article2Tag",
-        # through_fields=('article', 'tag')这个字段括号里的'article', 'tag'有先后顺序,
-        # ManyToManyField(to="Tag"),所以,article在前,'tag'在后
         through_fields=('article', 'tag')
     )
+    comment_count = models.IntegerField(default=0)
+    up_count = models.IntegerField(default=0)
+    down_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -103,6 +104,9 @@ class ArticleDetail(models.Model):
     """
     content = models.TextField()    # 文章内容
     article = models.OneToOneField(to='Article')
+
+    def __str__(self):
+        return self.article.title
 
     class Meta:
         verbose_name='文章详情'
