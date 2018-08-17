@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^index/', views.index),
     url(r'^myarticle/', views.myarticle),
     url(r'^logout/', views.logout_auth),
+    url(r'^updown/', views.updown),
     url(r'^404/', views.page_not_find),
     url(r'^pcgetcaptcha/', views.pcgetcaptcha),
     url(r'^media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),

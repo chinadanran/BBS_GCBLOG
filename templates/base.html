@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GC博园</title>
+    <title>{{ article.user.username }}的博园-GC博园</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
@@ -11,9 +11,10 @@
     <script src="https://at.alicdn.com/t/font_793795_6jh2tu3i1lc.js"></script>
     <link rel="stylesheet" href="/static/css/index.css">
     <style>
-        a:hover{
+        a:hover {
             text-decoration: none;
         }
+
         .article {
             margin-bottom: 30px;
         }
@@ -45,8 +46,9 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a></li>
-                <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
+                <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a>
+                </li>
+                <li><a href=/home/{{ request.user.username }}>我的博园</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li style="margin: 4px 2px 0 10px;">
@@ -72,118 +74,17 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">今日推荐</h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul class="nav nav-pills nav-stacked">
-                            {% for art in recommend_art_list %}
-                                <li class="clearfix" style="margin-bottom: 20px">
-                                    <a style="padding: 0" href="/myarticle/?article_id={{ art.id }}">
-                                        {{ forloop.counter }}&nbsp;
-                                        {{ art.title }}
-                                    </a>
-                                    <span style="float: right"><a href="/home/{{ art.user.username }}">-- {{ art.user.username }}</a></span>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
-                    </div>
-                    <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
-                             alt="" style="width: 192.8px">
-                        <img src="https://tpc.googlesyndication.com/daca_images/simgad/1239864976813252089"
-                             alt="" style="width: 192.8px">
-                    </div>
-                </div>
+                {% load my_inclusion %}
+                {% left_menu username %}
             </div>
             <div class="col-md-8">
-                {% for article in article_list %}
-                    <div class="article">
-                        <div class="media">
-                            <div class="media-left media-middle" style="margin-bottom: 10px">
-                                <a href="/myarticle/?article_id={{ article.id }}">
-                                    <h4 class="media-heading">{{ article.title }}</h4>
-                                </a>
-                            </div>
-                            <div class="media-body" style="line-height: 40px">
-                                <a href="/home/{{ article.user.username }}">
-                                    <img class="media-object"
-                                         style="width: 40px;display: inline-block;border-radius: 50%"
-                                         src="/media/{{ article.user.avatar }}" alt="...">
-                                </a>
-                                {{ article.desc }}...
-                            </div>
-                            <div class="media-foot">
-                                <span><a href="/home/{{ article.user.username }}">{{ article.user.username }}</a></span>
-                                <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
-                                <svg class="icon" aria-hidden="true">
-                                    <use xlink:href="#icon-wedding-invitation"></use>
-                                </svg>
-                                <span>评论（{{ article.comment_count }}）</span>
-                                <svg class="icon" aria-hidden="true">
-                                    <use xlink:href="#icon-love"></use>
-                                </svg>
-                                <span>点赞（{{ article.up_count }}）</span>
-                            </div>
-                        </div>
-                    </div>
-                    {% if forloop.counter != 5 %}
-                        <hr>
-                    {% endif %}
-                {% endfor %}
+                {% block page-main %}
 
+                {% endblock page-main %}
             </div>
             <div class="col-md-2">
-                <div class="panel panel-primary">
-                    <div class="panel-heading text-center">
-                        <h3 class="panel-title">搜索引擎</h3>
-                    </div>
-                    <div class="panel-body">
-                        <form action="http://www.baidu.com/baidu" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="http://www.baidu.com/">
-                                <img alt="baidu" src="/static/img/logo-80px.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="百度一下">
-                        </form>
-                        <hr>
-                        <form action="https://www.google.com/" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="https://www.google.com/">
-                                <img alt="baidu" src="/static/img/Logo_25wht.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="谷歌搜索">
-                        </form>
-                        <hr>
-                        <form action="http://so.xunlei.com/search" target="_blank" class=" text-center"
-                              style="margin-bottom: 20px">
-                            <a href="http://www.xunlei.com/">
-                                <img alt="baidu" src="/static/img/logo_search.gif" style="padding-bottom: 5px">
-                            </a>
-                            <input name="word" style="margin-bottom: 5px;width: 161px">
-                            <input class="btn btn-info btn-sm" type="submit" value="迅雷搜索">
-                        </form>
-                    </div>
-                </div>
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
-                    </div>
-                    <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
-                             alt="" style="width: 192.8px">
-                        <img src="https://tpc.googlesyndication.com/daca_images/simgad/17936005028505820328"
-                             alt="" style="width: 192.8px;height: 200px">
-                    </div>
-                </div>
+                {% load my_inclusion %}
+                {% right_menu username %}
             </div>
         </div>
         <div class="row" style="margin-bottom: 15px">
@@ -276,3 +177,4 @@
 </div>
 </body>
 </html>
+

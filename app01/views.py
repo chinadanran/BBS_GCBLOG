@@ -12,7 +12,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.cache import never_cache
 from geetest import GeetestLib
 from utils.mypage import Mypage
-from django.db.models import Count
+from django.db import transaction
+from django.db.models import Count, F
 
 pc_geetest_id = "b46d1900d0a894591916ea94ea91bd2c"
 pc_geetest_key = "36fc3fe98530eea08dfc6ce76e3d24c4"
@@ -49,8 +50,8 @@ class Login(views.View):
             next_url = request.GET.get('next')
             request.session['user'] = user_name
             request.session['showname'] = models.UserInfo.objects.get(username=user).name
-            if next_url and not request.path_info:
-                rep = redirect(f'{next_url}')
+            if next_url:
+                rep = redirect(next_url)
                 return rep
             else:
                 return redirect('/index/')
@@ -271,7 +272,6 @@ def pcgetcaptcha(request):
 # 注册函数结束
 # ==========================================
 # 首页函数开始
-@login_required
 def index(req):
     show_name = req.session.get('showname', '')
     article_list = models.Article.objects.all()
@@ -324,30 +324,30 @@ def myarticle(req):
     :return: 文章页面
     '''
     try:
-        recommend_art_list = models.Article.objects.filter(up_count__gt=5)
         article_id = req.GET.get('article_id')
         article_obj = models.Article.objects.filter(id=article_id).first()
-        contents = models.ArticleDetail.objects.filter(article_id=article_id).first().content
+        username = models.UserInfo.objects.filter(id=article_obj.user_id).first().username
     except:
         return redirect('/404/')
-    return render(req, 'myarticle.html',
-                  {'contents': contents, 'article': article_obj, 'recommend_art_list': recommend_art_list})
+    return render(req, 'myarticle.html', {'article': article_obj, 'username': username})
 
 
 def page_not_find(req):
     return render(req, '404.html')
 
 
+@login_required
 def home(req, username, *args, **kwargs):
+    '''
+    个人博园站点函数
+    :param req:
+    :param username:
+    :param args:
+    :param kwargs:
+    :return: 个人博园页面
+    '''
     user_obj = models.UserInfo.objects.filter(username=username).first()
     article_list = models.Article.objects.filter(user=user_obj)
-    my_article_list = article_list
-    blog_obj = user_obj.blog
-    category_list = models.Category.objects.filter(blog=blog_obj)
-    tag_list = models.Tag.objects.filter(blog=blog_obj)
-    archive_list = models.Article.objects.filter(user=user_obj).extra(
-        select={"y_m": "strftime('%%Y-%%m',create_time,'localtime')"}
-    ).values("y_m").annotate(c=Count("id")).values("y_m", "c")
     url = f'home/{username}'
     if args:
         url = f'home/{username}/{args[0]}/{args[1]}'
@@ -367,12 +367,32 @@ def home(req, username, *args, **kwargs):
     data = article_list[page_obj.ret_start: page_obj.ret_end]
     page_html = page_obj.ret_html()
     return render(req, "home.html", {
-        "blog": blog_obj,
+        'username': username,
         "data": data,
-        "my_article_list": my_article_list,
-        "category_list": category_list,
-        "tag_list": tag_list,
-        "archive_list": archive_list,
-        "user": user_obj,
         'page_html': page_html
     })
+
+
+def updown(request):
+    if request.method == "POST":
+        res = {"code": 0}
+        user_id = request.POST.get("userId")
+        article_id = request.POST.get("articleId")
+        is_up = True if request.POST.get("isUp").upper() == 'TRUE' else False
+        article_obj = models.Article.objects.filter(id=article_id, user_id=user_id)
+        if article_obj:
+            res["code"] = 1
+            res["msg"] = '不能给自己的文章点赞！' if is_up else '不能反对自己的内容！'
+        else:
+            is_exist = models.ArticleUpDown.objects.filter(user_id=user_id, article_id=article_id).first()
+            if is_exist:
+                res["code"] = 1
+                res["msg"] = '已经点过赞' if is_exist.is_up else '已经反对过'
+            else:
+                with transaction.atomic():
+                    models.ArticleUpDown.objects.create(user_id=user_id, article_id=article_id, is_up=is_up)
+                    models.Article.objects.filter(id=article_id).update(
+                        up_count=F('up_count') + 1) if is_up else models.Article.objects.filter(id=article_id).update(
+                        down_count=F('down_count') + 1)
+                res["msg"] = '点赞成功' if is_up else '反对成功'
+        return JsonResponse(res)
