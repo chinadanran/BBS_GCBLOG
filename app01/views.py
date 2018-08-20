@@ -327,9 +327,10 @@ def myarticle(req):
         article_id = req.GET.get('article_id')
         article_obj = models.Article.objects.filter(id=article_id).first()
         username = models.UserInfo.objects.filter(id=article_obj.user_id).first().username
+        comment_list = models.Comment.objects.filter(article=article_obj)
     except:
         return redirect('/404/')
-    return render(req, 'myarticle.html', {'article': article_obj, 'username': username})
+    return render(req, 'myarticle.html', {'article': article_obj, 'username': username,'comment_list':comment_list})
 
 
 def page_not_find(req):
@@ -348,9 +349,9 @@ def home(req, username, *args, **kwargs):
     '''
     user_obj = models.UserInfo.objects.filter(username=username).first()
     article_list = models.Article.objects.filter(user=user_obj)
-    url = f'home/{username}'
+    url = 'home/{}'.format(username)
     if args:
-        url = f'home/{username}/{args[0]}/{args[1]}'
+        url = 'home/%s/%s/%s' % (username,args[0],args[1])
         if args[0] == "category":
             article_list = article_list.filter(category__title=args[1])
         elif args[0] == "tag":
@@ -386,8 +387,17 @@ def updown(request):
         else:
             is_exist = models.ArticleUpDown.objects.filter(user_id=user_id, article_id=article_id).first()
             if is_exist:
-                res["code"] = 1
-                res["msg"] = '已经点过赞' if is_exist.is_up else '已经反对过'
+                if is_exist.is_up == is_up:
+                    res["code"] = 2
+                    res["msg"] = '已经取消点赞' if is_exist.is_up else '已经取消反对'
+                    with transaction.atomic():
+                        is_exist.delete()
+                        models.Article.objects.filter(id=article_id).update(
+                            up_count=F('up_count') - 1) if is_up else models.Article.objects.filter(id=article_id).update(
+                            down_count=F('down_count') - 1)
+                else:
+                    res['code'] = 1
+                    res['msg'] = '已经点过赞' if is_exist.is_up else '已经反对过'
             else:
                 with transaction.atomic():
                     models.ArticleUpDown.objects.create(user_id=user_id, article_id=article_id, is_up=is_up)
@@ -396,3 +406,29 @@ def updown(request):
                         down_count=F('down_count') + 1)
                 res["msg"] = '点赞成功' if is_up else '反对成功'
         return JsonResponse(res)
+
+
+def comment(request):
+    rep = {}
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        article_id = request.POST.get('article')
+        parent_id = request.POST.get('parent_id')
+        parent_id = parent_id if parent_id else None
+        with transaction.atomic():
+            comment_obj = models.Comment.objects.create(article_id=article_id,user=request.user,content=content,parent_comment_id=parent_id)
+            models.Article.objects.filter(id=article_id).update(comment_count=F('comment_count')+1)
+            article_obj = models.Article.objects.filter(id=article_id).first()
+
+            if comment_obj.parent_comment:
+                rep['parent_comment'] = 0
+                rep['parent_name'] = comment_obj.parent_comment.user.username
+                rep['parent_content'] = comment_obj.parent_comment.content
+            else:rep['parent_comment'] = 1
+            rep['content'] = content
+            rep['comment_id'] = comment_obj.id
+            rep['comment_count'] = article_obj.comment_count
+            rep['username'] = request.user.username
+            rep['create_time'] = comment_obj.create_time.strftime('"%Y-%m-%d %H:%M"')
+            rep['avatar'] = str(models.UserInfo.objects.filter(username=request.user.username).first().avatar)
+    return JsonResponse(rep)

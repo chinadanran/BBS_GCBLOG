@@ -12,7 +12,7 @@ class UserInfo(AbstractUser):
     # 头像,上传路径到upload_to="avatars/", null=True头像不能为空
     avatar = models.FileField(upload_to="avatars/", default='avatars/default.png')
 
-    blog = models.OneToOneField(to='Blog', null=True)
+    blog = models.OneToOneField(to='Blog', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.username
@@ -45,7 +45,7 @@ class Category(models.Model):
     """
     title = models.CharField(max_length=32)
     # 外间关联博客,一个博客站点可以关联多个分类
-    blog = models.ForeignKey(to='Blog')
+    blog = models.ForeignKey(to='Blog', on_delete=models.CASCADE)
 
     def __str__(self):
         return "{}-{}".format(self.blog.title, self.title)
@@ -62,7 +62,7 @@ class Tag(models.Model):
     # 标签名字
     title = models.CharField(max_length=32)
     # 标签所属博客
-    blog = models.ForeignKey(to='Blog')
+    blog = models.ForeignKey(to='Blog', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -79,12 +79,12 @@ class Article(models.Model):
     title = models.CharField(max_length=50)# 文章标题
     desc = models.CharField(max_length=255)# 文章描述
     create_time = models.DateTimeField(auto_now_add=True)   # 创建时间
-    category = models.ForeignKey(to="Category", null=True)# 文章分类
-    user = models.ForeignKey(to='UserInfo')#作者
+    category = models.ForeignKey(to="Category", null=True, on_delete=models.CASCADE)# 文章分类
+    user = models.ForeignKey(to='UserInfo', on_delete=models.CASCADE)#作者
     tags = models.ManyToManyField(# 文章的标签
         to="Tag",
         through="Article2Tag",
-        through_fields=('article', 'tag')
+        through_fields=('article', 'tag'),
     )
     comment_count = models.IntegerField(default=0)
     up_count = models.IntegerField(default=0)
@@ -103,7 +103,7 @@ class ArticleDetail(models.Model):
     文章详情表
     """
     content = models.TextField()    # 文章内容
-    article = models.OneToOneField(to='Article')
+    article = models.OneToOneField(to='Article', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.article.title
@@ -117,8 +117,8 @@ class Article2Tag(models.Model):
     """
     文章和标签的多对多关系
     """
-    article = models.ForeignKey(to="Article")
-    tag = models.ForeignKey(to="Tag")
+    article = models.ForeignKey(to="Article", on_delete=models.CASCADE)
+    tag = models.ForeignKey(to="Tag", on_delete=models.CASCADE)
 
     def __str__(self):
         return "{}-{}".format(self.article, self.tag)
@@ -134,8 +134,8 @@ class ArticleUpDown(models.Model):
     """
     点赞表
     """
-    user = models.ForeignKey(to='UserInfo', null=True)
-    article = models.ForeignKey(to='Article', null=True)
+    user = models.ForeignKey(to='UserInfo', null=True, on_delete=models.CASCADE)
+    article = models.ForeignKey(to='Article', null=True, on_delete=models.CASCADE)
     # 点赞或踩灭,True,赞,False,灭
     is_up = models.BooleanField(default=True)
 
@@ -150,13 +150,13 @@ class ArticleUpDown(models.Model):
 
 
 class Comment(models.Model):
-    article = models.ForeignKey(to='Article')
-    user = models.ForeignKey(to='UserInfo')
+    article = models.ForeignKey(to='Article', on_delete=models.CASCADE)
+    user = models.ForeignKey(to='UserInfo', on_delete=models.CASCADE)
     content = models.CharField(max_length=255)  # 评论内容
     create_time = models.DateTimeField(auto_now_add=True)
 
     # 自关联,自己给自己评论
-    parent_comment = models.ForeignKey('self', null=True)
+    parent_comment = models.ForeignKey('self', null=True, on_delete=models.CASCADE, blank=True)
 
     def __str__(self):
         return self.content

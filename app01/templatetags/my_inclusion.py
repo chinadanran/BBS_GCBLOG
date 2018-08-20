@@ -24,7 +24,7 @@ def right_menu(username):
     user_obj = models.UserInfo.objects.filter(username=username).first()
     article_list = models.Article.objects.filter(user=user_obj)
     archive_list = models.Article.objects.filter(user=user_obj).extra(
-        select={"y_m": "strftime('%%Y-%%m',create_time,'localtime')"}
+        select={"y_m": "DATE_FORMAT(create_time, '%%Y-%%m')"}
     ).values("y_m").annotate(c=Count("id")).values("y_m", "c")
     return {
         'user':user_obj,

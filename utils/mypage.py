@@ -73,17 +73,17 @@ class Mypage:
             show_tags_left = 1
             show_tags_right = self.total_page_num
 
-        first_page_tag = f'<li><a href="/{self.prefix}/?page=1">首页</a></li>'
-        last_page_tag = f'<li><a href="/{self.prefix}/?page={self.total_page_num}">尾页</a></li>'
-        front_page_tag = f'<li><a href="/{self.prefix}/?page={self.page_num - 1}">&laquo;</a></li>'
-        next_page_tag = f'<li><a href="/{self.prefix}/?page={self.page_num + 1}">&raquo;</a></li>'
+        first_page_tag = '<li><a href="/{0}/?page=1">首页</a></li>'.format(self.prefix)
+        last_page_tag = '<li><a href="/{0}/?page={1}">尾页</a></li>'.format(self.prefix,self.total_page_num)
+        front_page_tag = '<li><a href="/{0}/?page={1}">&laquo;</a></li>'.format(self.prefix,self.page_num - 1)
+        next_page_tag = '<li><a href="/{0}/?page={1}">&raquo;</a></li>'.format(self.prefix,self.page_num + 1)
 
         page_tag_html = ''
         for i in range(show_tags_left, show_tags_right + 1):
             if i == self.page_num:
-                page_tag_html += f'<li class="active"><a href="/{self.prefix}/?page={i}">{i}</a></li>'
+                page_tag_html += '<li class="active"><a href="/{0}/?page={1}">{1}</a></li>'.format(self.prefix,i)
             else:
-                page_tag_html += f'<li><a href="/{self.prefix}/?page={i}">{i}</a></li>'
+                page_tag_html += '<li><a href="/{0}/?page={1}">{1}</a></li>'.format(self.prefix,i)
         page_tag_html = '<nav aria-label="Page navigation" style="float:right"><ul class="pagination">' + front_page_tag + first_page_tag + page_tag_html + last_page_tag + next_page_tag + '</ul></nav>'
         return page_tag_html
 

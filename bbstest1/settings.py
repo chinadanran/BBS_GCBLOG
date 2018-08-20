@@ -25,7 +25,7 @@ SECRET_KEY = '^pg1srpbhxgk6(rt2cti6bg-2nmf7@2lgxcje#helta0nnqmcw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.12.30',]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'bbstest1.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db1',
+        'HOST':'139.159.3.122',
+        'POST':'3306',
+        'USER':'root',
+        'PASSWORD':'123456',
     }
 }
 
@@ -124,11 +128,11 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR,'static')
 ]
 AUTH_USER_MODEL = "app01.UserInfo"
-SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'  # 加密
-SESSION_COOKIE_NAME = "sessionid"  # 键值对的键名
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # 关闭浏览器清除session
-SESSION_SAVE_EVERY_REQUEST = True  # 是否每次请求都保存Session，默认修改之后才保存（默认）
-SESSION_COOKIE_AGE = 3600  # Session的cookie失效日期 默认两周
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 3600
 LOGIN_URL = '/login/'
 
 MEDIA_URL = '/media/'

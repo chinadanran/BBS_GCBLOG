@@ -2,64 +2,199 @@
 {% block page-main %}
     {% csrf_token %}
     <div class="article">
-        <div class="media">
+        <div class="media clearfix">
             <div class="media-left media-middle" style="margin:30px 20px">
                 <h1 class="media-heading">{{ article.title }}</h1>
             </div>
             <div class="media-body" style="line-height: 40px">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ article.articledetail.content|safe }}
+                {{ article.articledetail.content|safe }}
             </div>
-            <div class="media-foot" style="margin-top: 20px;float: right">
-                <h4>
+            <div class="media-foot clearfix" style="margin-top: 20px">
+                <h4 class="text-right">
                     <span><a href="/home/{{ article.user.username }}">{{ article.user.username }}</a></span>
                     <span>发布于：{{ article.create_time|date:"Y-m-d H:i:s" }}</span>
                 </h4>
-                <div style="float: right">
+                <div class="text-right">
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-wedding-invitation"></use>
                     </svg>
-                    <a href="javascript:void(0);" >评论（{{ article.comment_count }}）</a>
+                    <a href="javascript:void(0);">评论（{{ article.comment_count }}）</a>
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-love"></use>
                     </svg>
-                    <a href="javascript:void(0);" class="dig digUp">赞一赞（<span id="digg_count">{{ article.up_count }}</span>）</a>
-                    <a href="javascript:void(0);" class="dig digDown">踩一踩（<span id="bury_count">{{ article.down_count }}</span>）</a>
-                    <div style="height: 24px"><span id="digg_tips" style="float:right;color: rgba(250,82,63,0.6);"></span></div>
+                    <a href="javascript:void(0);" class="dig digUp">赞一赞（<span
+                            id="digg_count">{{ article.up_count }}</span>）</a>
+                    <a href="javascript:void(0);" class="dig digDown">踩一踩（<span
+                            id="bury_count">{{ article.down_count }}</span>）</a>
+                    <div style="height: 24px"><span id="digg_tips"
+                                                    style="float:right;color: rgba(250,82,63,0.6);"></span></div>
+                </div>
+            </div>
+            <div class="comment">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">评论专区</h3>
+                    </div>
+                    <div class="panel-body" style="padding: 10px 0 0 0" id="comment-list">
+                        {% for comment in comment_list %}
+                            <div class="panel panel-success">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="display: inline-block">
+                                        # {{ forloop.counter }}楼
+                                        <i class="small">{{ comment.create_time|date:'Y-m-d H:i' }}</i>
+                                        <i class="small">
+                                            <a href="/home/{{ comment.user.username }}">
+                                                {{ comment.user.username }}&nbsp;&nbsp;
+                                                <img src="/media/{{ comment.user.avatar }}" alt=""
+                                                     style="width: 40px;display: inline-block;border-radius: 50%">
+                                            </a>
+                                        </i>
+                                    </h3>
+                                    <span class="pull-right replay" name="{{ comment.user.username }}"
+                                          my-id="{{ comment.id }}">回复</span>
+                                </div>
+                                <div class="panel-body">
+                                    {% if comment.parent_comment %}
+                                        <div class="panel-danger panel">
+                                            <div class="panel-heading" style="position: relative">
+                                                @{{ comment.parent_comment.user.username }}:
+                                                <i style="color: #ef9966;position: absolute;left: 10px;top: -13px;font-size: 10px">引用</i>
+                                            </div>
+                                            <div class="panel-body">
+                                                {{ comment.parent_comment.content }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    {{ comment.content }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4>发表评论：</h4>
+                        <textarea id="new-comment" class="form-control" rows="5">
+                        </textarea>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-md-5 form-inline">
+                        <label>昵称：</label>
+                        <input type="text" value="{{ request.user.username }}" disabled class="form-control">
+                    </div>
+                    <div class="col-md-7">
+                        <div class="text-right">
+                            <button id="submit-comment" class="btn btn-success">发表评论</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <script>
-    $('.dig').click(function () {
-        if (!'{{ request.user.username }}') {
-            location.href='/login/?next={{ request.get_full_path }}'
-        }
-        var userId = '{{ request.user.id }}';
-        var articleId = '{{ article.id }}';
-        var isUp = $(this).hasClass('digUp');
-        $.ajax({
-            url: '/updown/',
-            type: 'post',
-            data:{
-                csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
-                userId: userId,
-                articleId: articleId,
-                isUp: isUp
-            },
-            success:function (res) {
-                console.log(res);
-                if (res.code === 0){
-                    if (isUp){
-                        var $UpSpan = $("#digg_count");
-                        $UpSpan.text(1+$UpSpan.val());
-                    }else {
-                        var $downSpan = $("#bury_count");
-                        $downSpan.text(1+$downSpan.val())
+        $('.dig').click(function () {
+            if (!'{{ request.user.username }}') {
+                location.href = '/login/?next={{ request.get_full_path }}'
+            }
+            var userId = '{{ request.user.id }}';
+            var articleId = '{{ article.id }}';
+            var isUp = $(this).hasClass('digUp');
+            $.ajax({
+                url: '/updown/',
+                type: 'post',
+                data: {
+                    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+                    userId: userId,
+                    articleId: articleId,
+                    isUp: isUp
+                },
+                success: function (res) {
+                    var $UpSpan = $("#digg_count");
+                    var $downSpan = $("#bury_count");
+                    if (res.code === 0) {
+                        if (isUp) {
+                            $UpSpan.text(+$UpSpan.text() + 1);
+                        } else {
+                            $downSpan.text(+$downSpan.text() + 1)
+                        }
+                    } else if (res.code === 2) {
+                        if (isUp) {
+                            $UpSpan.text(+$UpSpan.text() - 1);
+                        } else {
+                            $downSpan.text(+$downSpan.text() - 1)
+                        }
                     }
-                }
-                $("#digg_tips").text(res.msg);
+                    $("#digg_tips").text(res.msg);
                 }
             })
+        });
+        $('#submit-comment').click(function () {
+            var content = $('#new-comment').val();
+            var article = '{{ article.id }}';
+            var parentId = $(this).data("pid") || "";
+            if (parentId) {
+                content = content.slice(content.indexOf('\n') + 1,);
+            }
+            $.ajax({
+                url: '/comment/',
+                type: 'post',
+                data: {
+                    'content': content,
+                    'article': article,
+                    'parent_id': parentId,
+                    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (data) {
+                    if (data.parent_comment === 0) {
+                        var quoteHtml = `
+                            <div class="panel-danger panel">
+                                <div class="panel-heading" style="position: relative">
+                                    @${ data.parent_name }:
+                                    <i style="color: #ef9966;position: absolute;left: 10px;top: -13px;font-size: 10px">引用</i>
+                                </div>
+                                <div class="panel-body">
+                                    ${ data.parent_content }
+                                </div>
+                            </div>
+                        `;
+                        console.log(quoteHtml);
+                    } else {
+                        var quoteHtml =``
+                    }
+                    var commentHtml = `
+                    <div class="panel panel-success">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="display: inline-block">
+                                        # ${ data.comment_count }楼
+                                        <i class="small">${ data.create_time }</i>
+                                        <i class="small">
+                                            <a href="/home/${ data.username }">
+                                                ${ data.username }&nbsp;&nbsp;
+                                                <img src="/media/${ data.avatar }" alt=""
+                                                     style="width: 40px;display: inline-block;border-radius: 50%">
+                                            </a>
+                                        </i>
+                                    </h3>
+                                    <span class="pull-right replay"  name="${ data.username }" my-id="${ data.comment_id }">回复</span>
+                                </div>
+                                <div class="panel-body">
+                                    ${quoteHtml}
+                                    ${ data.content }
+                                </div>
+                            </div>
+                    `;
+                    $("#comment-list").append(commentHtml);
+                    $("#new-comment").val('');
+                    $("#submit-comment").removeData("pid");
+                }
+            })
+        });
+        $('#comment-list').on('click', '.replay', function () {
+            var replayName = $(this).attr('name');
+            $("#new-comment").focus().val("@" + replayName + "\n");
+            var pID = $(this).attr("my-id");
+            $("#submit-comment").data("pid", pID);
         })
     </script>
 {% endblock page-main %}
