@@ -18,7 +18,7 @@
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-wedding-invitation"></use>
                     </svg>
-                    <a href="javascript:void(0);">评论（{{ article.comment_count }}）</a>
+                    <a href="javascript:void(0);">评论（<span id="conmment_count">{{ article.comment_count }}</span>）</a>
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-love"></use>
                     </svg>
@@ -130,11 +130,14 @@
             })
         });
         $('#submit-comment').click(function () {
+            if (!'{{ request.user.username }}') {
+                location.href = '/login/?next={{ request.get_full_path }}'
+            }
             var content = $('#new-comment').val();
             var article = '{{ article.id }}';
             var parentId = $(this).data("pid") || "";
             if (parentId) {
-                content = content.slice(content.indexOf('\n') + 1,);
+                content = content.slice(content.indexOf('\n') + 1);
             }
             $.ajax({
                 url: '/comment/',
@@ -160,7 +163,7 @@
                         `;
                         console.log(quoteHtml);
                     } else {
-                        var quoteHtml =``
+                        quoteHtml =``
                     }
                     var commentHtml = `
                     <div class="panel panel-success">
@@ -187,6 +190,8 @@
                     $("#comment-list").append(commentHtml);
                     $("#new-comment").val('');
                     $("#submit-comment").removeData("pid");
+                    var $commentCount = $('#conmment_count');
+                    $commentCount.text(+$commentCount.text()+1);
                 }
             })
         });

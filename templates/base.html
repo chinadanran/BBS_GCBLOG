@@ -48,7 +48,11 @@
             <ul class="nav navbar-nav">
                 <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a>
                 </li>
-                <li><a href=/home/{{ request.user.username }}>我的博园</a></li>
+                {% if request.user.username %}
+                    <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
+                {% else %}
+                    <li><a href="/login/?next=/home/{{ request.user.username }}">我的博园</a></li>
+                {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li style="margin: 4px 2px 0 10px;">
@@ -63,6 +67,7 @@
                         <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
+                        <li><a href="/backend/">文章管理</a></li>
                         <li><a href="/logout/">注销</a></li>
                     </ul>
                 </li>

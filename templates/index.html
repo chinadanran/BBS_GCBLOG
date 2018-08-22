@@ -46,7 +46,11 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li><a href="/index/" style="font-size: 16px;font-weight: 600">首页 <span class="sr-only">(current)</span></a></li>
-                <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
+                {% if request.user.username %}
+                    <li><a href="/home/{{ request.user.username }}">我的博园</a></li>
+                {% else %}
+                    <li><a href="/login/?next=/home/{{ request.user.username }}">我的博园</a></li>
+                {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li style="margin: 4px 2px 0 10px;">
@@ -61,6 +65,7 @@
                         <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
+                        <li><a href="/backend/">文章管理</a></li>
                         <li><a href="/logout/">注销</a></li>
                     </ul>
                 </li>
@@ -95,7 +100,7 @@
                         <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
                     </div>
                     <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
+                        <img src="/static/img/0.jpg"
                              alt="" style="width: 192.8px">
                         <img src="https://tpc.googlesyndication.com/daca_images/simgad/1239864976813252089"
                              alt="" style="width: 192.8px">
@@ -178,7 +183,7 @@
                         <h3 class="panel-title">官方推荐<i class="small" style="float: right;color: #5cb85c">广告</i></h3>
                     </div>
                     <div>
-                        <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001530780351101304e7e7655174965b2357ef3512940c4000/0"
+                        <img src="/static/img/0.jpg"
                              alt="" style="width: 192.8px">
                         <img src="https://tpc.googlesyndication.com/daca_images/simgad/17936005028505820328"
                              alt="" style="width: 192.8px;height: 200px">

@@ -14,6 +14,9 @@ from geetest import GeetestLib
 from utils.mypage import Mypage
 from django.db import transaction
 from django.db.models import Count, F
+import os
+from django.conf import settings
+from bs4 import BeautifulSoup
 
 pc_geetest_id = "b46d1900d0a894591916ea94ea91bd2c"
 pc_geetest_key = "36fc3fe98530eea08dfc6ce76e3d24c4"
@@ -51,6 +54,8 @@ class Login(views.View):
             request.session['user'] = user_name
             request.session['showname'] = models.UserInfo.objects.get(username=user).name
             if next_url:
+                if next_url == '/home/':
+                    next_url = '/home/{}'.format(user_name)
                 rep = redirect(next_url)
                 return rep
             else:
@@ -325,6 +330,7 @@ def myarticle(req):
     '''
     try:
         article_id = req.GET.get('article_id')
+        print(article_id)
         article_obj = models.Article.objects.filter(id=article_id).first()
         username = models.UserInfo.objects.filter(id=article_obj.user_id).first().username
         comment_list = models.Comment.objects.filter(article=article_obj)
@@ -432,3 +438,83 @@ def comment(request):
             rep['create_time'] = comment_obj.create_time.strftime('"%Y-%m-%d %H:%M"')
             rep['avatar'] = str(models.UserInfo.objects.filter(username=request.user.username).first().avatar)
     return JsonResponse(rep)
+
+
+# 管理后台
+def backend(request):
+    # 现获取当前用户的所有文章
+    article_list = models.Article.objects.filter(user=request.user)
+    return render(request, "backend.html", {"article_list": article_list})
+
+
+# 添加新文章
+def add_article(request):
+    if request.method == "POST":
+        # 获取用户填写的文章内容
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        category_id = request.POST.get("category")
+
+        # 清洗用户发布的文章的内容，去掉script标签
+        soup = BeautifulSoup(content, "html.parser")
+        script_list = soup.select("script")
+        for i in script_list:
+            i.decompose()
+
+        # 写入数据库
+        with transaction.atomic():
+            # 1. 先创建文章记录
+            article_obj = models.Article.objects.create(
+                title=title,
+                desc=soup.text[0:150],
+                user=request.user,
+                category_id=category_id
+            )
+            # 2. 创建文章详情记录
+            models.ArticleDetail.objects.create(
+                content=soup.prettify(),
+                article=article_obj
+            )
+        return redirect("/backend/")
+
+    # 把当前博客的文章分类查询出来
+    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    return render(request, "add_article.html", {"category_list": category_list})
+
+
+# 富文本编辑器的图片上传
+def upload(request):
+    res = {"error": 0}
+    print(request.FILES)
+    file_obj = request.FILES.get("imgFile")
+    file_path = os.path.join(settings.MEDIA_ROOT, "article_imgs", file_obj.name)
+    with open(file_path, "wb") as f:
+        for chunk in file_obj.chunks():
+            f.write(chunk)
+    # url = settings.MEDIA_URL + "article_imgs/" + file_obj.name
+    url = "/media/article_imgs/" + file_obj.name
+    res["url"] = url
+    return JsonResponse(res)
+
+
+def delete_article(request):
+    del_id = request.GET.get('del_id')
+    article_obj = models.Article.objects.filter(id=del_id).first()
+    if article_obj:
+        with transaction.atomic():
+            article_det_obj = models.ArticleDetail.objects.filter(article_id=del_id).filter().delete()
+            article_obj.delete()
+    else:
+        return redirect('/404/')
+    return redirect('/backend/')
+
+
+def edit_article(request):
+    edit_id = request.GET.get('edit_id')
+    article_obj = models.Article.objects.filter(id=edit_id).first()
+    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    if article_obj:
+        content = models.ArticleDetail.objects.filter(article=article_obj).first().content
+        return render(request,'edit_article.html',locals())
+    else:
+        return redirect('/404/')
