@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -23,10 +22,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '^pg1srpbhxgk6(rt2cti6bg-2nmf7@2lgxcje#helta0nnqmcw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 1
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -37,7 +35,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app01.apps.App01Config',
+    'django.forms',
+    'bbstest1.apps.accounts',
+    'bbstest1.apps.article',
+    'bbstest1.apps.ftp',
+    'bbstest1.apps.gcadmin',
+    'bbstest1.apps.rbac',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'bbstest1.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'bbstest1/templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -70,21 +73,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bbstest1.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db1',
-        'HOST':'139.159.3.122',
-        'POST':'3306',
-        'USER':'root',
-        'PASSWORD':'123456',
+        'NAME': 'bbs',
+        'HOST': '127.0.0.1',
+        'POST': '3306',
+        'USER': 'root',
+        'PASSWORD': '5464521Gc@@',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -104,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -118,15 +118,16 @@ USE_L10N = True
 
 USE_TZ = False
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+STATIC_ROOT = '/opt/static/django'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR,'static')
+    os.path.join(BASE_DIR, 'bbstest1/static')
 ]
-AUTH_USER_MODEL = "app01.UserInfo"
+AUTH_USER_MODEL = "accounts.UserInfo"
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_NAME = "sessionid"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

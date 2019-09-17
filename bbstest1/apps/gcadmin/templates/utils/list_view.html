@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="background-color: rgba(0,0,0,.1);border: 0">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                        data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">首页</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            </div>
+        </div>
+    </nav>
+    <div class="contain" style="padding-top: 60px">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-1">
+                {% if search_fields %}
+                    <form id="search" class="form-inline pull-right" method="get" action="">
+                        <div class="form-inline">
+                            <div class="input-group">
+                                <input name="q" type="text" class="form-control" id="exampleInputAmount"
+                                       placeholder="Search">
+                            </div>
+                            <button type="submit" class="btn btn-success">Search</button>
+                        </div>
+                    </form>
+                {% endif %}
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div id="action" style="display: inline-block">
+                        <select name="action" class="form-control form-inline pull-left"
+                                style="width: 300px;display: inline-block">
+                            {% for func_dict in get_new_actions %}
+                                <option value="{{ func_dict.name }}">{{ func_dict.text }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-warning">Go</button>
+                    </div>
+                    <div style="display: inline-block;" class="pull-right">
+
+                    </div>
+                    <table class="table table-striped table-border">
+                        <thead>
+                        <tr>
+                            {% for item in header_list %}
+                                <th>{{ item }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for data in new_data_list %}
+                            <tr>
+                                {% for item in data %}
+                                    <td>{{ item }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="col-md-2">
+                <div class="filter_region">
+                    {% for field,links in get_list_filter_links.items %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading text-center ">By {{ field|upper }}</div>
+                            <ul class="panel-body list-unstyled text-center">
+                                {% for link in links %}
+                                    {{ link|safe }}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-1">
+                <a href="{{ add_url }}" class="btn btn-primary">添加数据</a>{{ page_html|safe }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

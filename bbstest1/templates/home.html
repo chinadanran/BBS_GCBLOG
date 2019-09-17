@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block page-main %}
+    {% for article in data %}
+        <div class="article">
+            <div class="media">
+                <div class="media-left media-middle" style="margin-bottom: 10px">
+                    <a href="{% url 'article:my-article' %}?article_id={{ article.id }}">
+                        <h4 class="media-heading">{{ article.title }}</h4>
+                    </a>
+                </div>
+                <div class="media-body" style="line-height: 40px">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ article.desc }}...
+                </div>
+                <div class="media-foot">
+                    <span><a href="{% url 'article:homepage' article.user.username %}">{{ article.user.username }}</a>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-wedding-invitation"></use>
+                    </svg>
+                    <span>评论（{{ article.comment_count }}）</span>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-love"></use>
+                    </svg>
+                    <span>点赞（{{ article.up_count }}）</span>
+                </div>
+            </div>
+        </div>
+        {% if forloop.counter != 5 %}
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endblock page-main %}
