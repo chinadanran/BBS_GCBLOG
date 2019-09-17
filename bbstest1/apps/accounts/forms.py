@@ -1,12 +1,14 @@
 from django import forms
 from django.core.validators import RegexValidator  # 导入Django内置的正则校验规则
 from django.core.exceptions import ValidationError  # 导入Django内置的校验异常的类
+
+from bbstest1.apps.accounts.models import UserInfo
 from bbstest1.apps.article import models
 import re
 
 
 def user_check(value):
-    user_obj = models.UserInfo.objects.filter(username=value)
+    user_obj = UserInfo.objects.filter(username=value)
     if user_obj:
         raise ValidationError("该用户名以被注册")
     else:
@@ -14,7 +16,7 @@ def user_check(value):
 
 
 def email_check(value):
-    user_obj = models.UserInfo.objects.filter(email=value)
+    user_obj = UserInfo.objects.filter(email=value)
     if user_obj:
         raise ValidationError("该邮箱以被注册")
     else:
@@ -22,7 +24,7 @@ def email_check(value):
 
 
 def phone_check(value):
-    user_obj = models.UserInfo.objects.filter(phone=value)
+    user_obj = UserInfo.objects.filter(phone=value)
     if user_obj:
         raise ValidationError("该手机号码以被注册")
     else:
@@ -30,7 +32,7 @@ def phone_check(value):
 
 
 def name_check(value):
-    user_obj = models.UserInfo.objects.filter(name=value)
+    user_obj = UserInfo.objects.filter(name=value)
     if user_obj:
         raise ValidationError("该显示名以被注册")
     else:

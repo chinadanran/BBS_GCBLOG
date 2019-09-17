@@ -18,7 +18,7 @@ class PermissionMiddleware(MiddlewareMixin):
                 return None
         user = request.session.get("user")
         if not user:
-            return redirect("/login/")
+            return reverse_lazy('accounts:login')
         permission_list = request.session.get("permission_list")
         for reg in permission_list:
             reg = "^%s$" % reg

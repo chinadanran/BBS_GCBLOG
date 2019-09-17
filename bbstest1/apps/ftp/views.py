@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
+from django.urls import reverse_lazy
+
 
 @login_required
 def download(req, path):
@@ -18,7 +20,7 @@ def download(req, path):
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = 'attachment;filename="{}"'.format(file_name)
             return response
-    return redirect('/showfile/')
+    return redirect(reverse_lazy('ftp:show-file'))
 
 
 @login_required
@@ -33,7 +35,7 @@ def del_file(req, path):
         root_path = os.path.join(settings.BASE_DIR, 'library', req.user.username, path)
         if os.path.isfile(root_path):
             os.remove(root_path)
-    return redirect('/showfile/')
+    return redirect(reverse_lazy('ftp:show-file'))
 
 
 @login_required

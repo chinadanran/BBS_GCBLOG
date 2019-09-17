@@ -65,7 +65,7 @@ var _hmt = _hmt || [];
             <ul class="nav navbar-nav navbar-right">
                 {% if request.user.username %}
                 <li style="margin: 4px 2px 0 10px;">
-                    <img src="{% url 'article:media' request.user.avatar %}" alt="" style="height: 35px;width: 35px;border-radius: 50%">
+                    <img src="{% url 'article:media' request.user.avatar.path %}" alt="" style="height: 35px;width: 35px;border-radius: 50%">
                 </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle clearfix" data-toggle="dropdown" role="button"

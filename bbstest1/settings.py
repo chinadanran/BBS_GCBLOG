@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'bbstest1.apps.ftp',
     'bbstest1.apps.gcadmin',
     'bbstest1.apps.rbac',
+    'bbstest1.apps.templatetags'
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'my_inclusion': 'bbstest1.apps.templatetags.my_inclusion',
+            },
         },
     },
 ]

@@ -1,16 +1,12 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django import views
-from bbstest1.apps.article import models
-import random
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
+from django.urls import reverse_lazy
+
+from bbstest1.apps.accounts.models import UserInfo
 from django.http import JsonResponse
-from bbstest1.apps.accounts.forms import RegForm
-import re
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
-from django.views.decorators.cache import never_cache
-from bbstest1.geetest import GeetestLib
+
+from bbstest1.apps.article.models import Article, Comment, ArticleUpDown, ArticleDetail, Category
 from bbstest1.apps.utils.mypage import Mypage
 from django.db import transaction
 from django.db.models import F
@@ -24,13 +20,13 @@ from bs4 import BeautifulSoup
 # 首页函数开始
 def index(req):
     show_name = req.session.get('showname', '')
-    article_list = models.Article.objects.all()
+    article_list = Article.objects.all()
     data_amount = article_list.count()
     page_num = req.GET.get('page', 1)
     page_obj = Mypage(page_num, data_amount, 'index', per_page_data=5)
     data = article_list[page_obj.ret_start: page_obj.ret_end]
     page_html = page_obj.ret_html()
-    recommend_art_list = models.Article.objects.filter(up_count__gt=5)
+    recommend_art_list = Article.objects.filter(up_count__gt=5)
     return render(req, 'index.html', {'showname': show_name, 'article_list': data, 'page_html': page_html,
                                       'recommend_art_list': recommend_art_list})
 
@@ -46,7 +42,7 @@ def index(req):
 #     :return: 我的博园页面
 #     '''
 #     user = req.session.get('user', '')
-#     articles = models.Article.objects.filter(user__username=user)
+#     articles = Article.objects.filter(user__username=user)
 #     data_amount = articles.count()
 #     page_num = req.GET.get('page', 1)
 #     page_obj = Mypage(page_num, data_amount, 'myblog', per_page_data=3)
@@ -74,11 +70,11 @@ def myarticle(req):
     '''
     try:
         article_id = req.GET.get('article_id')
-        article_obj = models.Article.objects.filter(id=article_id).first()
-        username = models.UserInfo.objects.filter(id=article_obj.user_id).first().username
-        comment_list = models.Comment.objects.filter(article=article_obj)
+        article_obj = Article.objects.filter(id=article_id).first()
+        username = UserInfo.objects.filter(id=article_obj.user_id).first().username
+        comment_list = Comment.objects.filter(article=article_obj)
     except:
-        return redirect('/404/')
+        return redirect(reverse_lazy('article:404'))
     return render(req, 'myarticle.html', {'article': article_obj, 'username': username, 'comment_list': comment_list})
 
 
@@ -96,8 +92,8 @@ def home(req, username, *args, **kwargs):
     :param kwargs:
     :return: 个人博园页面
     '''
-    user_obj = models.UserInfo.objects.filter(username=username).first()
-    article_list = models.Article.objects.filter(user=user_obj)
+    user_obj = UserInfo.objects.filter(username=username).first()
+    article_list = Article.objects.filter(user=user_obj)
     url = 'home/{}'.format(username)
     if args:
         url = 'home/%s/%s/%s' % (username, args[0], args[1])
@@ -129,20 +125,20 @@ def updown(request):
         user_id = request.POST.get("userId")
         article_id = request.POST.get("articleId")
         is_up = True if request.POST.get("isUp").upper() == 'TRUE' else False
-        article_obj = models.Article.objects.filter(id=article_id, user_id=user_id)
+        article_obj = Article.objects.filter(id=article_id, user_id=user_id)
         if article_obj:
             res["code"] = 1
             res["msg"] = '不能给自己的文章点赞！' if is_up else '不能反对自己的内容！'
         else:
-            is_exist = models.ArticleUpDown.objects.filter(user_id=user_id, article_id=article_id).first()
+            is_exist = ArticleUpDown.objects.filter(user_id=user_id, article_id=article_id).first()
             if is_exist:
                 if is_exist.is_up == is_up:
                     res["code"] = 2
                     res["msg"] = '已经取消点赞' if is_exist.is_up else '已经取消反对'
                     with transaction.atomic():
                         is_exist.delete()
-                        models.Article.objects.filter(id=article_id).update(
-                            up_count=F('up_count') - 1) if is_up else models.Article.objects.filter(
+                        Article.objects.filter(id=article_id).update(
+                            up_count=F('up_count') - 1) if is_up else Article.objects.filter(
                             id=article_id).update(
                             down_count=F('down_count') - 1)
                 else:
@@ -150,9 +146,9 @@ def updown(request):
                     res['msg'] = '已经点过赞' if is_exist.is_up else '已经反对过'
             else:
                 with transaction.atomic():
-                    models.ArticleUpDown.objects.create(user_id=user_id, article_id=article_id, is_up=is_up)
-                    models.Article.objects.filter(id=article_id).update(
-                        up_count=F('up_count') + 1) if is_up else models.Article.objects.filter(id=article_id).update(
+                    ArticleUpDown.objects.create(user_id=user_id, article_id=article_id, is_up=is_up)
+                    Article.objects.filter(id=article_id).update(
+                        up_count=F('up_count') + 1) if is_up else Article.objects.filter(id=article_id).update(
                         down_count=F('down_count') + 1)
                 res["msg"] = '点赞成功' if is_up else '反对成功'
         return JsonResponse(res)
@@ -166,10 +162,10 @@ def comment(request):
         parent_id = request.POST.get('parent_id')
         parent_id = parent_id if parent_id else None
         with transaction.atomic():
-            comment_obj = models.Comment.objects.create(article_id=article_id, user=request.user, content=content,
+            comment_obj = Comment.objects.create(article_id=article_id, user=request.user, content=content,
                                                         parent_comment_id=parent_id)
-            models.Article.objects.filter(id=article_id).update(comment_count=F('comment_count') + 1)
-            article_obj = models.Article.objects.filter(id=article_id).first()
+            Article.objects.filter(id=article_id).update(comment_count=F('comment_count') + 1)
+            article_obj = Article.objects.filter(id=article_id).first()
 
             if comment_obj.parent_comment:
                 rep['parent_comment'] = 0
@@ -182,7 +178,7 @@ def comment(request):
             rep['comment_count'] = article_obj.comment_count
             rep['username'] = request.user.username
             rep['create_time'] = comment_obj.create_time.strftime('"%Y-%m-%d %H:%M"')
-            rep['avatar'] = str(models.UserInfo.objects.filter(username=request.user.username).first().avatar)
+            rep['avatar'] = str(UserInfo.objects.filter(username=request.user.username).first().avatar)
     return JsonResponse(rep)
 
 
@@ -190,7 +186,7 @@ def comment(request):
 @login_required
 def backend(request):
     # 现获取当前用户的所有文章
-    article_list = models.Article.objects.filter(user=request.user)
+    article_list = Article.objects.filter(user=request.user)
     return render(request, "backend.html", {"article_list": article_list})
 
 
@@ -212,21 +208,21 @@ def add_article(request):
         # 写入数据库
         with transaction.atomic():
             # 1. 先创建文章记录
-            article_obj = models.Article.objects.create(
+            article_obj = Article.objects.create(
                 title=title,
                 desc=soup.text[0:150],
                 user=request.user,
                 category_id=category_id
             )
             # 2. 创建文章详情记录
-            models.ArticleDetail.objects.create(
+            ArticleDetail.objects.create(
                 content=soup.prettify(),
                 article=article_obj
             )
-        return redirect("/backend/")
+        return redirect(reverse_lazy('article:backend'))
 
     # 把当前博客的文章分类查询出来
-    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    category_list = Category.objects.filter(blog=request.user.blog)
     return render(request, "add_article.html", {"category_list": category_list})
 
 
@@ -247,23 +243,23 @@ def upload(request):
 @login_required
 def delete_article(request):
     del_id = request.GET.get('del_id')
-    article_obj = models.Article.objects.filter(id=del_id).first()
+    article_obj = Article.objects.filter(id=del_id).first()
     if article_obj:
         with transaction.atomic():
-            article_det_obj = models.ArticleDetail.objects.filter(article_id=del_id).filter().delete()
+            article_det_obj = ArticleDetail.objects.filter(article_id=del_id).filter().delete()
             article_obj.delete()
     else:
-        return redirect('/404/')
-    return redirect('/backend/')
+        return redirect(reverse_lazy('article:404'))
+    return redirect(reverse_lazy('article:backend'))
 
 
 @login_required
 def edit_article(request):
     edit_id = request.GET.get('edit_id')
-    article_list = models.Article.objects.filter(id=edit_id)
+    article_list = Article.objects.filter(id=edit_id)
     article_obj = article_list.first()
-    article_detile_list = models.ArticleDetail.objects.filter(article=article_obj)
-    category_list = models.Category.objects.filter(blog__userinfo=request.user)
+    article_detile_list = ArticleDetail.objects.filter(article=article_obj)
+    category_list = Category.objects.filter(blog=request.user.blog)
     if article_obj and article_detile_list:
         if request.method == 'POST':
             title = request.POST.get("title")
@@ -285,9 +281,9 @@ def edit_article(request):
                     content=soup.prettify(),
                     article=article_obj
                 )
-            return redirect("/backend/")
+            return redirect(reverse_lazy('article:backend'))
 
-        content = models.ArticleDetail.objects.filter(article=article_obj).first().content
+        content = ArticleDetail.objects.filter(article=article_obj).first().content
         return render(request, 'edit_article.html', locals())
     else:
-        return redirect('/404/')
+        return redirect(reverse_lazy('article:404'))

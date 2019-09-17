@@ -1,4 +1,6 @@
 from django import template
+
+from bbstest1.apps.accounts.models import UserInfo
 from bbstest1.apps.article import models
 from django.db.models import Count
 
@@ -8,7 +10,7 @@ register = template.Library()
 
 @register.inclusion_tag(filename='left_menu.html')
 def left_menu(username):
-    user_obj = models.UserInfo.objects.filter(username=username).first()
+    user_obj = UserInfo.objects.filter(username=username).first()
     blog = user_obj.blog
     category_list = models.Category.objects.filter(blog=blog)
     tag_list = models.Tag.objects.filter(blog=blog)
@@ -21,7 +23,7 @@ def left_menu(username):
 
 @register.inclusion_tag(filename='right_menu.html')
 def right_menu(username):
-    user_obj = models.UserInfo.objects.filter(username=username).first()
+    user_obj = UserInfo.objects.filter(username=username).first()
     article_list = models.Article.objects.filter(user=user_obj)
     archive_list = models.Article.objects.filter(user=user_obj).extra(
         select={"y_m": "DATE_FORMAT(create_time, '%%Y-%%m')"}

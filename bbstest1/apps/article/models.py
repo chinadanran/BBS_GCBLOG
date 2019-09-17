@@ -11,6 +11,7 @@ class Blog(models.Model):
     title = models.CharField(max_length=64)
     # 博客主题
     theme = models.CharField(max_length=32)
+    user = models.OneToOneField('accounts.UserInfo', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
