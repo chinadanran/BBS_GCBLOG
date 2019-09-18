@@ -1,4 +1,15 @@
 {% extends 'base.html' %}
+{% block left_menu %}
+  {% load my_inclusion %}
+  {% left_menu username %}
+{% endblock %}
+
+{% block right_menu %}
+  {% load my_inclusion %}
+  {% right_menu username %}
+{% endblock %}
+
+
 {% block page-main %}
     {% csrf_token %}
     <div class="article">
@@ -45,7 +56,7 @@
                                         <i class="small">
                                             <a href="{% url 'article:homepage' comment.user.username %}">
                                                 {{ comment.user.username }}&nbsp;&nbsp;
-                                                <img src="{% url 'article:media' comment.user.avatar %}" alt=""
+                                                <img src="{% url 'media' comment.user.avatar.path %}" alt=""
                                                      style="width: 40px;display: inline-block;border-radius: 50%">
                                             </a>
                                         </i>

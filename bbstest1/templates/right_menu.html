@@ -25,7 +25,7 @@
         <ul class="nav nav-pills nav-stacked text-center">
             {% for group in  archive_list %}
                 <li class="clearfix">
-                    <a href="{% url 'article:homepage' user.username %}/archive/{{ group.y_m }}/">{{ group.y_m }}（{{ group.c }}）</a>
+                    <a href="{% url 'article:homepage-category' user.username 'archive' group.y_m %}">{{ group.y_m }}（{{ group.c }}）</a>
                 </li>
             {% endfor %}
         </ul>

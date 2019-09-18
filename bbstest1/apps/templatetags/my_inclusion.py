@@ -4,7 +4,6 @@ from bbstest1.apps.accounts.models import UserInfo
 from bbstest1.apps.article import models
 from django.db.models import Count
 
-
 register = template.Library()
 
 
@@ -15,7 +14,7 @@ def left_menu(username):
     category_list = models.Category.objects.filter(blog=blog)
     tag_list = models.Tag.objects.filter(blog=blog)
     return {
-        'user':user_obj,
+        'user': user_obj,
         "category_list": category_list,
         "tag_list": tag_list,
     }
@@ -29,7 +28,7 @@ def right_menu(username):
         select={"y_m": "DATE_FORMAT(create_time, '%%Y-%%m')"}
     ).values("y_m").annotate(c=Count("id")).values("y_m", "c")
     return {
-        'user':user_obj,
-        'article_list':article_list,
+        'user': user_obj,
+        'article_list': article_list,
         "archive_list": archive_list
     }

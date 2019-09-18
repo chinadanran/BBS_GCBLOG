@@ -6,7 +6,7 @@
         <ul class="nav nav-pills nav-stacked text-center">
             {% for category in category_list %}
                 <li class="clearfix">
-                    <a href="{% url 'article:homepage' user.username %}/category/{{ category.title }}/">{{ category.title }}({{ category.article_set.all.count }})</a>
+                    <a href="{% url 'article:homepage-category' user.username 'category' category.title %}">{{ category.title }}({{ category.article_set.all.count }})</a>
                 </li>
             {% endfor %}
         </ul>
@@ -20,7 +20,7 @@
         <ul class="nav nav-pills nav-stacked text-center">
             {% for tag in tag_list %}
                 <li class="clearfix">
-                    <a href="{% url 'article:homepage' user.username %}/tag/{{ tag.title }}/">{{ tag.title }}（{{ tag.article_set.all.count }}）</a>
+                    <a href="{% url 'article:homepage-category' user.username 'tag' tag.title %}">{{ tag.title }}（{{ tag.article_set.all.count }}）</a>
                 </li>
             {% endfor %}
         </ul>

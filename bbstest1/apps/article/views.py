@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from bbstest1.apps.article.models import Article, Comment, ArticleUpDown, ArticleDetail, Category
 from bbstest1.apps.utils.mypage import Mypage
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 import os
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -62,6 +62,7 @@ def index(req):
 #     return render(req, 'myblog.html',
 #                   {'articleList': data, 'page_html': page_html, 'year_month_number': year_month_number})
 
+@login_required
 def myarticle(req):
     '''
     我的文章函数
@@ -93,20 +94,24 @@ def home(req, username, *args, **kwargs):
     :return: 个人博园页面
     '''
     user_obj = UserInfo.objects.filter(username=username).first()
-    article_list = Article.objects.filter(user=user_obj)
-    url = 'home/{}'.format(username)
-    if args:
-        url = 'home/%s/%s/%s' % (username, args[0], args[1])
-        if args[0] == "category":
-            article_list = article_list.filter(category__title=args[1])
-        elif args[0] == "tag":
-            article_list = article_list.filter(tags__title=args[1])
+    query = Q(user=user_obj)
+    url = reverse_lazy('article:homepage', kwargs={'username': username})
+    if kwargs:
+        article_type = kwargs.get('article_type', '')
+        article_date = kwargs.get('article_date', '')
+        url = reverse_lazy('article:homepage-category',
+                           kwargs={'username': username, 'article_type': article_type, 'article_date': article_date})
+        if article_type == "category":
+            query = query & Q(category__title=article_date)
+        elif article_type == "tag":
+            query = query & Q(tags__title=article_date)
         else:
             try:
-                year, month = args[1].split("-")
-                article_list = article_list.filter(create_time__year=year, create_time__month=month)
+                year, month = article_date.split("-")
+                query = query & Q(create_time__year=year, create_time__month=month)
             except Exception as e:
                 pass
+    article_list = Article.objects.filter(query)
     data_amount = article_list.count()
     page_num = req.GET.get('page', 1)
     page_obj = Mypage(page_num, data_amount, url, per_page_data=3)
@@ -119,6 +124,7 @@ def home(req, username, *args, **kwargs):
     })
 
 
+@login_required
 def updown(request):
     if request.method == "POST":
         res = {"code": 0}
@@ -154,6 +160,7 @@ def updown(request):
         return JsonResponse(res)
 
 
+@login_required
 def comment(request):
     rep = {}
     if request.method == 'POST':
@@ -227,6 +234,7 @@ def add_article(request):
 
 
 # 富文本编辑器的图片上传
+@login_required
 def upload(request):
     res = {"error": 0}
     file_obj = request.FILES.get("imgFile")

@@ -141,37 +141,29 @@ var _hmt = _hmt || [];
                 </div>
                 <div class="col-md-1"></div>
                 <div class="col-md-6 login-form" style="border-left: 2px solid #eeeeee">
-                    <form class="form-horizontal" method="post" action="{% url 'accounts:login' %}">
+                    <form class="form-horizontal" method="post">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="inputUserName" class="col-sm-3 control-label">登录用户名</label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" id="inputUserName" name="email" required=""
+                                <input type="text" class="form-control" id="inputUserName" name="username" required=""
                                        autofocus="" value="{{ user_name }}">
-                                <span class="error_msg">{{ user_msg }}</span>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="inputPassword3" class="col-sm-3 control-label">密码</label>
                             <div class="col-sm-9">
-                                <input type="password" class="form-control" id="inputPassword3" name="pass" required="">
-                                <span class="error_msg">{{ pwd_msg }}</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="V_CODE" class="col-sm-3 control-label">验证码</label>
-                            <div class="col-sm-5">
-                                <input type="text" class="form-control" id="V_CODE" name="v_code">
-                                <span class="error_msg"></span>
-                            </div>
-                            <div class="col-sm-1"></div>
-                            <div class="col-sm-4">
-                                <img src="{% url 'accounts:code-img' %}" alt="点击重新获取" id="vCodeImg">
+                                <input type="password" class="form-control" id="inputPassword3" name="password" required="">
+                                <span class="error_msg">
+                                  {% if form.errors %}
+                                    Please enter a correct username and password.
+                                  {% endif %}
+                                </span>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-sm-offset-5  col-sm-5">
-                                <button type="button" class="btn btn-primary btn-group-justified" id="login_btn">登录</button>
+                                <button type="submit" class="btn btn-primary btn-group-justified" id="login_btn">登录</button>
                             </div>
                         </div>
                     </form>
@@ -198,45 +190,4 @@ var _hmt = _hmt || [];
 </div>
 
 </body>
-<script>
-    $('#vCodeImg').click(function () {
-        if (this.src.endsWith('?')){
-            this.src = this.src.slice(0,-1)
-        } else {
-            this.src += '?'
-        }
-    });
-    $('#V_CODE').blur(function () {
-        $code = $(this);
-        let code = $code.val();
-        let csrfToken = $("[name='csrfmiddlewaretoken']").val();
-        console.log(code);
-        if (code.length !== 0) {
-            $.ajax({
-                url:'{% url 'accounts:check-v-code' %}',
-                type:'post',
-                data:{'v_code':code,csrfmiddlewaretoken: csrfToken,},
-                success:function (data) {
-                    if (data.count !== 0) {
-                        $code.next().text(data.error_msg);
-                        $code.parent().parent().addClass('has-error form-group');
-                        $code.attr('status',0)
-                    }else {
-                        $code.next().text('√').css('color', 'green');
-                        $code.parent().parent().removeClass('has-error');
-                        $code.parent().parent().addClass('has-success form-group');
-                        $('#login_btn').attr('type','submit')
-                    }
-                }
-            })
-        }
-    });
-    $('#login_btn').click(function () {
-        $code = $('#V_CODE');
-        if ($code.val().length === 0){
-            $code.next().text('请填写验证码');
-            $code.parent().parent().addClass('has-error form-group');
-        }
-    })
-</script>
 </html>

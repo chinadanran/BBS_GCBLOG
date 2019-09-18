@@ -3,11 +3,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ article.user.username }}的博园-GC博园</title>
+    <title>{% if article %}{{ article.user.username }}{% else %}{{ request.user.username }}{% endif %}的博园-GC博园</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <script src="{% static 'js/jquery.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
-{#    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.css" rel="stylesheet">#}
     <script src="{% static 'js/font_793795_6jh2tu3i1lc.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <style>
@@ -67,11 +66,10 @@ var _hmt = _hmt || [];
                 <li><a href="{% url 'ftp:show-file' %}">我的网盘</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li style="margin: 4px 2px 0 10px;">
-                    <img src="{% url 'article:media' request.user.avatar.path %}" alt=""
-                         style="height: 35px;width: 35px;border-radius: 50%">
-                </li>
                 {% if request.user.username %}
+                    <li style="margin: 4px 2px 0 10px;">
+                        <img src="{% url 'media' request.user.avatar.path %}" alt="" style="height: 35px;width: 35px;border-radius: 50%">
+                    </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle clearfix" data-toggle="dropdown" role="button"
                            aria-haspopup="true"
@@ -96,8 +94,8 @@ var _hmt = _hmt || [];
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2">
-                {% load my_inclusion %}
-                {% left_menu username %}
+              {% block left_menu %}
+              {% endblock %}
             </div>
             <div class="col-md-8">
                 {% block page-main %}
@@ -105,8 +103,8 @@ var _hmt = _hmt || [];
                 {% endblock page-main %}
             </div>
             <div class="col-md-2">
-                {% load my_inclusion %}
-                {% right_menu username %}
+              {% block right_menu %}
+              {% endblock %}
             </div>
         </div>
         <div class="row" style="margin-bottom: 15px">
@@ -200,3 +198,5 @@ var _hmt = _hmt || [];
 </body>
 </html>
 
+{% block js %}
+{% endblock %}

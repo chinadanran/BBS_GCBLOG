@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from django.shortcuts import render, redirect
 from django.utils.safestring import mark_safe
-from django.urls import reverse
+from django.urls import reverse, path
 from bbstest1.apps.gcadmin.mypage import Mypage
 from django import forms
 from django.db.models import Q
@@ -341,11 +341,11 @@ class ModelStark(object):
 
     def get_urls(self):
         temp = [
-            url(r"^$", self.listview, name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_show'),
-            url(r"add/$", self.addview, name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_add'),
-            url(r"(\d+)/change/$", self.changeview,
+            path(r"", self.listview, name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_show'),
+            path(r"add/", self.addview, name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_add'),
+            path(r"(\d+)/change/", self.changeview,
                 name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_change'),
-            url(r"(\d+)/delete/$", self.delview,
+            path(r"(\d+)/delete/", self.delview,
                 name=f'{self.model._meta.app_label}_{self.model._meta.model_name}_delete'),
         ]
         return temp

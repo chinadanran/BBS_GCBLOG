@@ -1,5 +1,15 @@
 {% extends 'base.html' %}
 
+{% block left_menu %}
+  {% load my_inclusion %}
+  {% left_menu username %}
+{% endblock %}
+
+{% block right_menu %}
+  {% load my_inclusion %}
+  {% right_menu username %}
+{% endblock %}
+
 {% block page-main %}
     {% for article in data %}
         <div class="article">

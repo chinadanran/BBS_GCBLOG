@@ -1,7 +1,7 @@
 from bbstest1.apps.article import views
 from django.views.static import serve
 from django.conf import settings
-from django.urls import path
+from django.urls import path, re_path
 
 app_name = 'article'
 urlpatterns = [
@@ -15,6 +15,6 @@ urlpatterns = [
     path(r'updown/', views.updown, name='up-down'),
     path(r'comment/', views.comment, name='comment'),
     path(r'404/', views.page_not_find, name='404'),
-    path(r'media/<str:path>', serve, {"document_root": settings.MEDIA_ROOT}, name='media'),
-    path(r'home/<str:username>/(category|tag|archive)/(.*)/', views.home, name='homepage'),
+    path(r'home/<str:username>/', views.home, name='homepage'),
+    path(r'home/<str:username>/<str:article_type>/<str:article_date>/', views.home, name='homepage-category'),
 ]
