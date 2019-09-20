@@ -13,7 +13,7 @@
                     <form class="form-horizontal" method="post" action="" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="form-group" id="avatar-box">
-                            <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}<img id="avatar-img" src="{% url 'media' 'avatars/default.png' %}" alt="" style="height: 80px;width: 80px;margin-left: 15px;border-radius: 50%"></label>
+                            <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}<img id="avatar-img" src="{% url 'media' 'default.png' %}" alt="" style="height: 80px;width: 80px;margin-left: 15px;border-radius: 50%"></label>
                             {{ form.avatar }}
                         </div>
                         <div class="form-group">

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block left_menu %}
   <div class="panel panel-primary">
     <div class="panel-heading">
@@ -29,7 +30,7 @@
           <form action="http://www.baidu.com/baidu" target="_blank" class=" text-center"
                 style="margin-bottom: 20px">
               <a href="http://www.baidu.com/">
-                  <img alt="baidu" src="/bbstest1/static/img/logo-80px.gif" style="padding-bottom: 5px">
+                  <img alt="baidu" src="{% static 'img/logo-80px.gif' %}" style="padding-bottom: 5px">
               </a>
               <input name="word" style="margin-bottom: 5px;width: 161px">
               <input class="btn btn-info btn-sm" type="submit" value="百度一下">
@@ -38,7 +39,7 @@
           <form action="https://www.google.com/" target="_blank" class=" text-center"
                 style="margin-bottom: 20px">
               <a href="https://www.google.com/">
-                  <img alt="baidu" src="/bbstest1/static/img/Logo_25wht.gif" style="padding-bottom: 5px">
+                  <img alt="baidu" src="{% static 'img/Logo_25wht.gif' %}" style="padding-bottom: 5px">
               </a>
               <input name="word" style="margin-bottom: 5px;width: 161px">
               <input class="btn btn-info btn-sm" type="submit" value="谷歌搜索">
@@ -46,8 +47,8 @@
           <hr>
           <form action="http://so.xunlei.com/search" target="_blank" class=" text-center"
                 style="margin-bottom: 20px">
-              <a href="http://www.xunlei.com/">
-                  <img alt="baidu" src="/bbstest1/static/img/logo_search.gif" style="padding-bottom: 5px">
+              <a href="https://www.sogou.com/web">
+                  <img alt="baidu" src="{% static 'img/logo_search.gif' %}" style="padding-bottom: 5px">
               </a>
               <input name="word" style="margin-bottom: 5px;width: 161px">
               <input class="btn btn-info btn-sm" type="submit" value="迅雷搜索">
