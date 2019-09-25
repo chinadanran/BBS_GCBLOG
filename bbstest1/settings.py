@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.forms',
+    'widget_tweaks',
     'bbstest1.apps.accounts',
     'bbstest1.apps.article',
     'bbstest1.apps.ftp',
@@ -140,4 +141,4 @@ SESSION_COOKIE_AGE = 3600
 LOGIN_URL = '/login/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'avatars')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

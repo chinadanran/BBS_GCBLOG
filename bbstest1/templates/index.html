@@ -9,7 +9,7 @@
         <ul class="nav nav-pills nav-stacked">
             {% for art in recommend_art_list %}
                 <li class="clearfix" style="margin-bottom: 20px">
-                    <a style="padding: 0" href="{% url 'article:my-article' %}?article_id={{ art.id }}">
+                    <a style="padding: 0" href="{% url 'article:my-article' art.id %}">
                         {{ forloop.counter }}&nbsp;
                         {{ art.title }}
                     </a>
@@ -62,8 +62,8 @@
   {% for article in article_list %}
       <div class="article">
           <div class="media">
-              <div class="media-left media-middle" style="margin-bottom: 10px">
-                  <a href="{% url 'article:my-article' %}?article_id={{ article.id }}">
+              <div class="media-middle" style="margin-bottom: 10px">
+                  <a href="{% url 'article:my-article' article.id %}">
                       <h4 class="media-heading">{{ article.title }}</h4>
                   </a>
               </div>

@@ -1,11 +1,14 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, HttpResponse
 from django import views
 from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, DeleteView, UpdateView
 
 from bbstest1.apps.accounts.models import UserInfo
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 
+from bbstest1.apps.article.forms import CreateArticleForm
 from bbstest1.apps.article.models import Article, Comment, ArticleUpDown, ArticleDetail, Category
 from bbstest1.apps.utils.mypage import Mypage
 from django.db import transaction
@@ -15,113 +18,45 @@ from django.conf import settings
 from bs4 import BeautifulSoup
 
 
-# 注册函数结束
-# ==========================================
 # 首页函数开始
-def index(req):
-    show_name = req.session.get('showname', '')
-    article_list = Article.objects.all()
-    data_amount = article_list.count()
-    page_num = req.GET.get('page', 1)
-    page_obj = Mypage(page_num, data_amount, 'index', per_page_data=5)
-    data = article_list[page_obj.ret_start: page_obj.ret_end]
-    page_html = page_obj.ret_html()
-    recommend_art_list = Article.objects.filter(up_count__gt=5)
-    return render(req, 'index.html', {'showname': show_name, 'article_list': data, 'page_html': page_html,
-                                      'recommend_art_list': recommend_art_list})
+class ArticleListView(ListView):
+    model = Article
+    paginate_by = 1
+    ordering = 'create_time'
+    template_name = 'index.html'
+    extra_context = {
+        'recommend_art_list': Article.objects.filter(up_count__gt=5),
+    }
 
 
-# 首页函数结束
-# ===================================================================
-# 我的博园开始
-# @login_required
-# def myblog(req):
-#     '''
-#     我的博园函数
-#     :param req:
-#     :return: 我的博园页面
-#     '''
-#     user = req.session.get('user', '')
-#     articles = Article.objects.filter(user__username=user)
-#     data_amount = articles.count()
-#     page_num = req.GET.get('page', 1)
-#     page_obj = Mypage(page_num, data_amount, 'myblog', per_page_data=3)
-#     data = articles[page_obj.ret_start: page_obj.ret_end]
-#     page_html = page_obj.ret_html()
-#     year_month = set()  # 设置集合，无重复元素
-#     for a in articles:
-#         year_month.add((a.create_time.year, a.create_time.month))  # 把每篇文章的年、月以元组形式添加到集合中
-#     counter = {}.fromkeys(year_month, 0)  # 以元组作为key，初始化字典
-#     for a in articles:
-#         counter[(a.create_time.year, a.create_time.month)] += 1  # 按年月统计文章数目
-#     year_month_number = []  # 初始化列表
-#     for key in counter:
-#         year_month_number.append([key[0], key[1], counter[key]])  # 把字典转化为（年，月，数目）元组为元素的列表
-#     year_month_number.sort(reverse=True)  # 排序
-#
-#     return render(req, 'myblog.html',
-#                   {'articleList': data, 'page_html': page_html, 'year_month_number': year_month_number})
-
-@login_required
-def myarticle(req):
-    '''
-    我的文章函数
-    :param req:
-    :return: 文章页面
-    '''
-    try:
-        article_id = req.GET.get('article_id')
-        article_obj = Article.objects.filter(id=article_id).first()
-        username = UserInfo.objects.filter(id=article_obj.user_id).first().username
-        comment_list = Comment.objects.filter(article=article_obj)
-    except:
-        return redirect(reverse_lazy('article:404'))
-    return render(req, 'myarticle.html', {'article': article_obj, 'username': username, 'comment_list': comment_list})
+class MyArticle(LoginRequiredMixin, DetailView):
+    model = Article
+    template_name = 'myarticle.html'
 
 
 def page_not_find(req):
     return render(req, '404.html')
 
 
-@login_required
-def home(req, username, *args, **kwargs):
-    '''
-    个人博园站点函数
-    :param req:
-    :param username:
-    :param args:
-    :param kwargs:
-    :return: 个人博园页面
-    '''
-    user_obj = UserInfo.objects.filter(username=username).first()
-    query = Q(user=user_obj)
-    url = reverse_lazy('article:homepage', kwargs={'username': username})
-    if kwargs:
-        article_type = kwargs.get('article_type', '')
-        article_date = kwargs.get('article_date', '')
-        url = reverse_lazy('article:homepage-category',
-                           kwargs={'username': username, 'article_type': article_type, 'article_date': article_date})
-        if article_type == "category":
-            query = query & Q(category__title=article_date)
-        elif article_type == "tag":
-            query = query & Q(tags__title=article_date)
-        else:
-            try:
-                year, month = article_date.split("-")
-                query = query & Q(create_time__year=year, create_time__month=month)
-            except Exception as e:
-                pass
-    article_list = Article.objects.filter(query)
-    data_amount = article_list.count()
-    page_num = req.GET.get('page', 1)
-    page_obj = Mypage(page_num, data_amount, url, per_page_data=3)
-    data = article_list[page_obj.ret_start: page_obj.ret_end]
-    page_html = page_obj.ret_html()
-    return render(req, "home.html", {
-        'username': username,
-        "data": data,
-        'page_html': page_html
-    })
+class HomePage(ArticleListView):
+
+    def get_queryset(self):
+        query = Q(user__username__iexact=self.kwargs.get('username'))
+        if self.request.GET:
+            article_type = self.request.GET.get('type', '')
+            article_date = self.request.GET.get('date', '')
+            if article_type == "category":
+                query = query & Q(category__title=article_date)
+            elif article_type == "tag":
+                query = query & Q(tags__title=article_date)
+            else:
+                try:
+                    year, month = article_date.split("-")
+                    query = query & Q(create_time__year=year, create_time__month=month)
+                except Exception as e:
+                    pass
+
+        return Article.objects.filter(query)
 
 
 @login_required
@@ -189,48 +124,36 @@ def comment(request):
     return JsonResponse(rep)
 
 
-# 管理后台
-@login_required
-def backend(request):
-    # 现获取当前用户的所有文章
-    article_list = Article.objects.filter(user=request.user)
-    return render(request, "backend.html", {"article_list": article_list})
+class Backend(LoginRequiredMixin, ListView):
+    model = Article
+    paginate_by = 10
+    ordering = 'create_time'
+    template_name = 'backend.html'
+
+    def get_queryset(self):
+        return Article.objects.filter(user=self.request.user)
 
 
 # 添加新文章
-@login_required
-def add_article(request):
-    if request.method == "POST":
-        # 获取用户填写的文章内容
-        title = request.POST.get("title")
-        content = request.POST.get("content")
-        category_id = request.POST.get("category")
+class CreateArticleView(LoginRequiredMixin, CreateView):
+    template_name = 'add_article.html'
+    form_class = CreateArticleForm
+    success_url = reverse_lazy('article:backend')
 
-        # 清洗用户发布的文章的内容，去掉script标签
-        soup = BeautifulSoup(content, "html.parser")
-        script_list = soup.select("script")
-        for i in script_list:
-            i.decompose()
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        kwargs = self.get_form_kwargs()
+        kwargs['initial'].update({'user': self.request.user})
+        return form_class(**kwargs)
 
-        # 写入数据库
-        with transaction.atomic():
-            # 1. 先创建文章记录
-            article_obj = Article.objects.create(
-                title=title,
-                desc=soup.text[0:150],
-                user=request.user,
-                category_id=category_id
-            )
-            # 2. 创建文章详情记录
-            ArticleDetail.objects.create(
-                content=soup.prettify(),
-                article=article_obj
-            )
-        return redirect(reverse_lazy('article:backend'))
-
-    # 把当前博客的文章分类查询出来
-    category_list = Category.objects.filter(blog=request.user.blog)
-    return render(request, "add_article.html", {"category_list": category_list})
+    def form_valid(self, form):
+        self.object = form.save()
+        ArticleDetail.objects.create(
+            content=form.cleaned_data['content'],
+            article=self.object
+        )
+        return HttpResponseRedirect(self.get_success_url())
 
 
 # 富文本编辑器的图片上传
@@ -242,56 +165,38 @@ def upload(request):
     with open(file_path, "wb") as f:
         for chunk in file_obj.chunks():
             f.write(chunk)
-    # url = settings.MEDIA_URL + "article_imgs/" + file_obj.name
-    url = "/media/article_imgs/" + file_obj.name
-    res["url"] = url
+    res["url"] = reverse_lazy('media', kwargs={'path': 'article_imgs\\' + file_obj.name})
     return JsonResponse(res)
 
 
-@login_required
-def delete_article(request):
-    del_id = request.GET.get('del_id')
-    article_obj = Article.objects.filter(id=del_id).first()
-    if article_obj:
-        with transaction.atomic():
-            article_det_obj = ArticleDetail.objects.filter(article_id=del_id).filter().delete()
-            article_obj.delete()
-    else:
-        return redirect(reverse_lazy('article:404'))
-    return redirect(reverse_lazy('article:backend'))
+class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+    model = Article
+    success_url = reverse_lazy('article:backend')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        ArticleDetail.objects.filter(article=self.object).filter().delete()
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
 
 
-@login_required
-def edit_article(request):
-    edit_id = request.GET.get('edit_id')
-    article_list = Article.objects.filter(id=edit_id)
-    article_obj = article_list.first()
-    article_detile_list = ArticleDetail.objects.filter(article=article_obj)
-    category_list = Category.objects.filter(blog=request.user.blog)
-    if article_obj and article_detile_list:
-        if request.method == 'POST':
-            title = request.POST.get("title")
-            content = request.POST.get("content")
-            category_id = request.POST.get("category")
+class EditArticleView(LoginRequiredMixin, UpdateView):
+    model = Article
+    success_url = reverse_lazy('article:backend')
+    template_name = 'edit_article.html'
+    form_class = CreateArticleForm
 
-            soup = BeautifulSoup(content, "html.parser")
-            script_list = soup.select("script")
-            for i in script_list:
-                i.decompose()
-            with transaction.atomic():
-                article_list.update(
-                    title=title,
-                    desc=soup.text[0:150],
-                    user=request.user,
-                    category_id=category_id
-                )
-                article_detile_list.update(
-                    content=soup.prettify(),
-                    article=article_obj
-                )
-            return redirect(reverse_lazy('article:backend'))
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        kwargs = self.get_form_kwargs()
+        kwargs['initial'].update({'user': self.request.user})
+        return form_class(**kwargs)
 
-        content = ArticleDetail.objects.filter(article=article_obj).first().content
-        return render(request, 'edit_article.html', locals())
-    else:
-        return redirect(reverse_lazy('article:404'))
+    def form_valid(self, form):
+        self.object = form.save()
+        article_detail = ArticleDetail.objects.filter(article=self.object).first()
+        article_detail.content=form.cleaned_data['content']
+        article_detail.save()
+        return HttpResponseRedirect(self.get_success_url())

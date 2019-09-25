@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block left_menu %}
   {% load my_inclusion %}
-  {% left_menu username %}
+  {% left_menu article.user.username %}
 {% endblock %}
 
 {% block right_menu %}
   {% load my_inclusion %}
-  {% right_menu username %}
+  {% right_menu article.user.username %}
 {% endblock %}
 
 
@@ -14,9 +14,6 @@
     {% csrf_token %}
     <div class="article">
         <div class="media clearfix">
-            <div class="media-left media-middle" style="margin:30px 20px">
-                <h1 class="media-heading">{{ article.title }}</h1>
-            </div>
             <div class="media-body" style="line-height: 40px">
                 {{ article.articledetail.content|safe }}
             </div>
@@ -47,7 +44,7 @@
                         <h3 class="panel-title">评论专区</h3>
                     </div>
                     <div class="panel-body" style="padding: 10px 0 0 0" id="comment-list">
-                        {% for comment in comment_list %}
+                        {% for comment in article.comment_set.all %}
                             <div class="panel panel-success">
                                 <div class="panel-heading">
                                     <h3 class="panel-title" style="display: inline-block" >

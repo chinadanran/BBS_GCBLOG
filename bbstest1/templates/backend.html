@@ -89,11 +89,11 @@ var _hmt = _hmt || [];
                 <tbody>
                     {% for article in article_list %}
                         <tr>
-                        <td><a href="{% url 'article:my-article' %}?article_id={{ article.id }}">{{ article.title }}</a></td>
+                        <td><a href="{% url 'article:my-article' article.id %}">{{ article.title }}</a></td>
                         <td>{{ article.comment_count }}</td>
                         <td>{{ article.up_count }}</td>
-                        <td><a href="{% url 'article:delete-article' %}?del_id={{ article.id }}">删除</a></td>
-                        <td><a href="{% url 'article:edit-article' %}?edit_id={{ article.id }}">编辑</a></td>
+                        <td><a href="{% url 'article:delete-article' article.id %}">删除</a></td>
+                        <td><a href="{% url 'article:edit-article' article.id  %}">编辑</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>

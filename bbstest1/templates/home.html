@@ -15,7 +15,7 @@
         <div class="article">
             <div class="media">
                 <div class="media-left media-middle" style="margin-bottom: 10px">
-                    <a href="{% url 'article:my-article' %}?article_id={{ article.id }}">
+                    <a href="{% url 'article:my-article' article.id %}">
                         <h4 class="media-heading">{{ article.title }}</h4>
                     </a>
                 </div>

@@ -31,14 +31,6 @@ def phone_check(value):
         return value
 
 
-def name_check(value):
-    user_obj = UserInfo.objects.filter(name=value)
-    if user_obj:
-        raise ValidationError("该显示名以被注册")
-    else:
-        return value
-
-
 def pwd_check1(value):
     if not re.findall(r"[0-9]+", value):
         raise ValidationError("密码必须包含数字")
@@ -99,7 +91,7 @@ class RegForm(forms.Form):
         error_messages={
             "required": "显示名不能为空"
         },
-        validators=[RegexValidator(r'[A-Za-z0-9_\-\u4e00-\u9fa5]+', "显示名格式不正确！"), name_check],
+        validators=[RegexValidator(r'[A-Za-z0-9_\-\u4e00-\u9fa5]+', "显示名格式不正确！")],
         widget=forms.widgets.TextInput(
             attrs={"class": "form-control", 'id': 'inputShowName', 'placeholder': "既昵称，不少于两个字符"}
         )

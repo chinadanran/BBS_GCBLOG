@@ -8,7 +8,7 @@ from bbstest1.apps.article import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
+    path('', views.ArticleListView.as_view(), name='index'),
     path('accounts/', include('bbstest1.apps.accounts.urls', namespace='accounts')),
     path('article/', include('bbstest1.apps.article.urls', namespace='article')),
     path('ftp/', include('bbstest1.apps.ftp.urls', namespace='ftp')),

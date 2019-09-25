@@ -1,0 +1,42 @@
+{% if is_paginated %}
+  <nav aria-label="Page navigation" style="float:right">
+  {% if arg %}
+    <div style="text-align: right;">
+      <ul class="pagination pagination-split" style="margin:0;">
+        {% if page_obj.has_previous %}
+          <li><a href="{% url name_space arg %}?page={{ page_obj.previous_page_number }}">«</a></li>
+        {% endif %}
+        {% for num in paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="active"><a href="{% url name_space arg %}?page={{ num }}">{{ num }}</a></li>
+          {% elif num|add:"-3" <= page_obj.number and page_obj.number <= num|add:"3" %}
+            <li><a href="{% url name_space arg %}?page={{ num }}">{{ num }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li><a href="{% url name_space arg %}?page={{ page_obj.next_page_number }}">»</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  {% else %}
+    <div style="text-align: right;">
+      <ul class="pagination pagination-split" style="margin:0;">
+        {% if page_obj.has_previous %}
+          <li><a href="{% url name_space %}?page={{ page_obj.previous_page_number }}">«</a></li>
+        {% endif %}
+        {% for num in paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="active"><a href="{% url name_space %}?page={{ num }}">{{ num }}</a></li>
+          {% elif num|add:"-3" <= page_obj.number and page_obj.number <= num|add:"3" %}
+            <li><a href="{% url name_space %}?page={{ num }}">{{ num }}</a></li>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <li><a href="{% url name_space %}?page={{ page_obj.next_page_number }}">»</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
+  </nav>
+{% endif %}
