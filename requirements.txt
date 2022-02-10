@@ -1,5 +1,5 @@
 requests==2.20.1
-Django==2.2.5
+Django==2.2.27
 setuptools==40.6.2
 PyMySQL==0.9.2
 Pillow==5.3.0
